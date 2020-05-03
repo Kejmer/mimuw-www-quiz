@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Quiz IT</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='stylesheet' type='text/css' media='screen' href='../style/main.css'>
+</head>
+<body>
+  <header>
+    <h1><a href="dashboard.html">Wybierz swój Quiz</a></h1>
+  </header>
+  <main>
+    <p>Wybierz swój quiz z dostępnych!</p>
+    <select name="quiz" id="quiz">
+      <optgroup label="Łatwy">
+        <option value="adding">Dodajemy!</option>
+        <option value="substracting">Odejmujemy!</option>
+        <option value="multypling">Mnożymy!</option>
+        <option value="dividing">Dzielimy!</option>
+      </optgroup>
+      <optgroup label="Średni">
+        <option value="Przegladarka">Szybkie Palce</option>
+        <option value="Vim">Vim</option>
+        <option value="Visual-Studio">Visual Studio</option>
+      </optgroup>
+      <optgroup label="Trudny">
+        <option value="Kompilator">Kompilator</option>
+        <option value="Automat">Automat</option>
+        <option value="Max-Flow">Max-Flow</option>
+      </optgroup>
+    </select>
+    <section id="button">
+      <button id="start">Start</button>
+    </section>
+      <!-- <p><a id="quiz-submit" class="btn" href='' onclick="getQuiz()">Start</a></p> -->
+  </main>
+  <footer>
+    Pozdrowienia z podziemia
+  </footer>
+</body>
+<script src='../script/dashboard.js'></script>
+</html>

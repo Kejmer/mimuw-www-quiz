@@ -1,0 +1,23 @@
+.hidden {
+  visibility: hidden;
+}
+
+
+button::-moz-focus-inner {
+  border: 0;
+}
+
+
+header {
+  text-align: center;
+}
+
+#start {
+  width: 400px;
+  height: 100px;
+  border: 2px solid black;
+  border-radius: 25px;
+  background-color: lime;
+  font-size: 20px;
+  grid-column-gap: 15px;
+}

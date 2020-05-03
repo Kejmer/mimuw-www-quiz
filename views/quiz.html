@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Quiz IT</title>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel='stylesheet' type='text/css' media='screen' href='../style/main.css'>
+  <link rel='stylesheet' type='text/css' media='screen' href='../style/quiz.css'>
+</head>
+<body>
+  <header>
+    <h1><a href="dashboard.html">Quiz it</a></h1>
+    <h2>Nazwa Quizu</h2>
+  </header>
+  <main>
+    <section id="question">
+      <button id="start">Start</button>
+    </section>
+    <section id="answers" class="hidden">
+      <button class="quiz-ans"><p></p></button>
+      <button class="quiz-ans"><p></p></button>
+      <button class="quiz-ans"><p></p></button>
+      <button class="quiz-ans"><p></p></button>
+    </section>
+    <nav id="question-btns" class="hidden">
+      <button id="previous">Poprzednie</button>
+      <button id="stop" disabled="true">STOP</button>
+      <button id="next">Następne</button>
+    </nav>
+  </main>
+  <footer>
+    Pozdrowienia z podziemia
+  </footer>
+</body>
+<script src='../script/quiz.js'></script>
+</html>

@@ -1,0 +1,12 @@
+const queryString = window.location.search;
+// let startBtn = document.getElementById("start") as HTMLButtonElement;
+// console.log(startBtn);
+
+function getQuiz() {
+  // const ref_link = document.getElementById('quiz-submit') as HTMLLinkElement;
+  const quiz_option = document.querySelector('#quiz') as HTMLSelectElement;
+  // startBtn.href = 'quiz.html?quiz=' + quiz_option.value;
+  window.location.replace('quiz.html?quiz=' + quiz_option.value);
+}
+
+document.getElementById("start").addEventListener("click", (e:Event) => getQuiz());
