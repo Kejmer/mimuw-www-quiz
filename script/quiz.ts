@@ -3,7 +3,7 @@
 /***************************************************************************/
 
 let json_string = `{
-  "question_count": 1,
+  "question_count": 6,
   "description": "Dodaj tyle ile możesz!",
   "min_prod": 5,
   "max_prod": 20,
@@ -481,14 +481,14 @@ function getData(more_data : boolean) {
   if (more_data) {
     _fastest = (fastest / 1000).toFixed(2);
     _slowest = (slowest / 1000).toFixed(2);
-    _avg = avg.toFixed(2);
+    _avg = ((avg / quiz_size) / 1000).toFixed(2);
     _penalty = penalty;
   }
 
   return {
     when: new Date().toLocaleString(),
     result: correct.toString() + '/' + quiz_size.toString() ,
-    score: score,
+    score: score.toFixed(2),
     quiz: quiz.getName(),
     penalty: _penalty,
     avg: avg,
@@ -533,7 +533,8 @@ function save(more_data : boolean) {
       };
     };
   }
-  window.location.replace('dashboard.html');
+  setTimeout(function(){ window.location.replace('dashboard.html'); }, 100);
+  // window.location.replace('dashboard.html');
 }
 
 withStatsBtn.addEventListener("click", () => save(true));
@@ -549,9 +550,10 @@ let totalSeconds = 0;
 setInterval(setTime, 1000);
 
 function setTime() {
-  ++totalSeconds;
+  if (quiz_status == QuizStatus.Running)
+    ++totalSeconds;
   secondsLabel.innerHTML = pad(totalSeconds % 60).toString();
-  minutesLabel.innerHTML = pad(parseInt(totalSeconds / 60).toString());
+  minutesLabel.innerHTML = pad(parseInt((totalSeconds / 60).toString()));
 }
 
 function pad(val) {

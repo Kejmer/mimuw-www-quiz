@@ -13,15 +13,33 @@ interface reportedValues {
   quiz: string;
   result: string;
   score: string;
-  quiz: string;
   avg: string;
   fastest: string;
   slowest: string;
+  penalty: string;
 }
 
 function isReportedValues(obj : any) : obj is reportedValues {
   return true;
 }
+
+interface Result {
+  result: any;
+}
+
+function hasResult(obj : any) : obj is Result {
+  return obj.result !== undefined;
+}
+
+interface Value_ {
+  value: any;
+  continue: any;
+}
+
+function hasValue(obj : any) : obj is Value_ {
+  return obj.values !== undefined ;
+}
+
 
 function fillTable() {
   if (!window.indexedDB) {
@@ -46,66 +64,63 @@ function fillTable() {
       let db = openRequest.result;
       let transaction = db.transaction(["statistics"], 'readonly');
       let objectStore = transaction.objectStore("statistics");
-      // let index = objectStore.index('id_idx');
+      let index = objectStore.index('id_idx');
 
-      let request = objectStore.getAll();
-      request.onsuccess = function(e : Event) {
-        // let cursor : IDBObjectStore = e.target.result;
-        console.log(request);
-        let values = request.result;
-        for (let i = 0; i < values.lenght; i++)
-        if (isReportedValues(values[i])) {
+      index.openCursor().onsuccess = function(e : Event) {
+        if (hasResult(e.target)) {
+          let cursor = e.target.result;
+          if (cursor) {
 
+            let values = cursor.value;
+            let row = document.createElement("tr");
 
-        let row = document.createElement("tr");
+            let cell = document.createElement("td");
+            if (values.when !== undefined)
+              cell.innerText = values.when;
+            row.appendChild(cell);
 
-        let cell = document.createElement("td");
-        if (values.when !== undefined)
-          cell.innerText = values.when;
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.quiz !== undefined)
+              cell.innerText = values.quiz;
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.quiz !== undefined)
-          cell.innerText = values.quiz;
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.result !== undefined)
+              cell.innerText = values.result;
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.result !== undefined)
-          cell.innerText = values.result;
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.score !== undefined)
+              cell.innerText = values.score;
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.score !== undefined)
-          cell.innerText = values.score;
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.avg !== undefined)
+              cell.innerText = values.avg + 's';
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.avg !== undefined)
-          cell.innerText = values.avg + 's';
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.penalty !== undefined)
+              cell.innerText = values.penalty;
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.penalty !== undefined)
-          cell.innerText = values.penalty;
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.fastest !== undefined)
+              cell.innerText = values.fastest + 's';
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.fastest !== undefined)
-          cell.innerText = values.fastest + 's';
-        row.appendChild(cell);
+            cell = document.createElement("td");
+            if (values.slowest !== undefined)
+              cell.innerText = values.slowest + 's';
+            row.appendChild(cell);
 
-        cell = document.createElement("td");
-        if (values.slowest !== undefined)
-          cell.innerText = values.slowest + 's';
-        row.appendChild(cell);
-
-        table.appendChild(row);
+            table.appendChild(row);
+            cursor.continue();
+          }
         }
-        // cursor.continue();
       };
       db.close();
     };
   }
 }
-
 fillTable();

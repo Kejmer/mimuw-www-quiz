@@ -138,6 +138,12 @@ nav button {
   height: 100px;
 }
 
+@media only screen and (max-width: 900px) {
+  section#answers {
+    grid-template-columns: 200px 200px;
+  }
+}
+
 @media only screen and (max-width: 700px) {
   main {
     grid-template-columns: auto;
@@ -151,9 +157,6 @@ nav button {
       "navigation "
       "summary    "
     ;
-  }
-  section#answers {
-    grid-template-columns: 200px 200px;
   }
 
   nav#question-btns {

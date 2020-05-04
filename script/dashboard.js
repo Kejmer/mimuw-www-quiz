@@ -8,6 +8,12 @@ var table = document.getElementById("stats");
 function isReportedValues(obj) {
     return true;
 }
+function hasResult(obj) {
+    return obj.result !== undefined;
+}
+function hasValue(obj) {
+    return obj.values !== undefined;
+}
 function fillTable() {
     if (!window.indexedDB) {
         console.log("Your browser doesn't support a stable version of IndexedDB. Statistics feature will not be available.");
@@ -29,14 +35,12 @@ function fillTable() {
             var db = openRequest_1.result;
             var transaction = db.transaction(["statistics"], 'readonly');
             var objectStore = transaction.objectStore("statistics");
-            // let index = objectStore.index('id_idx');
-            var request = objectStore.getAll();
-            request.onsuccess = function (e) {
-                // let cursor : IDBObjectStore = e.target.result;
-                console.log(request);
-                var values = request.result;
-                for (var i = 0; i < values.lenght; i++)
-                    if (isReportedValues(values[i])) {
+            var index = objectStore.index('id_idx');
+            index.openCursor().onsuccess = function (e) {
+                if (hasResult(e.target)) {
+                    var cursor = e.target.result;
+                    if (cursor) {
+                        var values = cursor.value;
                         var row = document.createElement("tr");
                         var cell = document.createElement("td");
                         if (values.when !== undefined)
@@ -71,8 +75,9 @@ function fillTable() {
                             cell.innerText = values.slowest + 's';
                         row.appendChild(cell);
                         table.appendChild(row);
+                        cursor["continue"]();
                     }
-                // cursor.continue();
+                }
             };
             db.close();
         };
