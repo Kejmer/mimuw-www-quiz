@@ -2,7 +2,68 @@
 /****************************** CLASSES ************************************/
 /***************************************************************************/
 
-let json_string = `{
+let quizes = [
+`{
+  "question_count": 6,
+  "description": "Nic dodać nic ująć!",
+  "min_prod": 5,
+  "max_prod": 20,
+  "min_qlen": 2,
+  "max_qlen": 3,
+  "variance": 20,
+  "penalty": 5,
+  "signs": ["-"],
+  "name": "Odejmujemy!"
+}`,
+`{
+  "question_count": 12,
+  "description": "To ja jestem Spartakusem!",
+  "min_prod": 1,
+  "max_prod": 1000,
+  "min_qlen": 1,
+  "max_qlen": 2,
+  "variance": 0,
+  "penalty": 5,
+  "signs": ["-"],
+  "name": "Klony!"
+}`,
+`{
+  "question_count": 6,
+  "description": "Mnoż Mnoż!",
+  "min_prod": 2,
+  "max_prod": 25,
+  "min_qlen": 2,
+  "max_qlen": 4,
+  "variance": 40,
+  "penalty": 5,
+  "signs": ["*"],
+  "name": "Mnożymy!"
+}`,
+`{
+  "question_count": 6,
+  "description": "Nie wybrzydzam!",
+  "min_prod": 5,
+  "max_prod": 20,
+  "min_qlen": 2,
+  "max_qlen": 5,
+  "variance": 20,
+  "penalty": 5,
+  "signs": ["+", "-", "3"],
+  "name": "Mieszanka studencka!"
+}`,
+`{
+  "question_count": 6,
+  "description": "Miej celne oko!",
+  "min_prod": 10,
+  "max_prod": 100,
+  "min_qlen": 1,
+  "max_qlen": 2,
+  "variance": 100,
+  "penalty": 999,
+  "signs": ["+"],
+  "name": "Szybkie Palce!"
+}`,
+`{
   "question_count": 6,
   "description": "Dodaj tyle ile możesz!",
   "min_prod": 5,
@@ -13,7 +74,8 @@ let json_string = `{
   "penalty": 5,
   "signs": ["+"],
   "name": "Dodajemy!"
-}`;
+}`
+]
 
 interface QuizRules {
   question_count : number;
@@ -234,7 +296,7 @@ let picks : number[] = [];
 let answered_num : number = 0;
 
 let score : number = 0;
-let quiz : Quiz = new Quiz(json_string);
+let quiz : Quiz = new Quiz(quizes[Math.floor(Math.random() * quizes.length)]);
 let quiz_size = quiz.getQuestionCount()
 let questions : Question[] = [];
 for (let i = 0; i < quiz_size; i++)
