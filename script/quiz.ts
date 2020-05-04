@@ -550,8 +550,8 @@ setInterval(setTime, 1000);
 
 function setTime() {
   ++totalSeconds;
-  secondsLabel.innerHTML = pad(totalSeconds % 60);
-  minutesLabel.innerHTML = pad(parseInt(totalSeconds / 60));
+  secondsLabel.innerHTML = pad(totalSeconds % 60).toString();
+  minutesLabel.innerHTML = pad(parseInt(totalSeconds / 60).toString());
 }
 
 function pad(val) {

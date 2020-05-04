@@ -6,9 +6,22 @@ function getQuiz() {
 }
 document.getElementById("start").addEventListener("click", (e:Event) => getQuiz());
 
-
-
 let table = document.getElementById("stats") as HTMLElement;
+
+interface reportedValues {
+  when: string;
+  quiz: string;
+  result: string;
+  score: string;
+  quiz: string;
+  avg: string;
+  fastest: string;
+  slowest: string;
+}
+
+function isReportedValues(obj : any) : obj is reportedValues {
+  return true;
+}
 
 function fillTable() {
   if (!window.indexedDB) {
@@ -40,6 +53,9 @@ function fillTable() {
         // let cursor : IDBObjectStore = e.target.result;
         console.log(request);
         let values = request.result;
+        for (let i = 0; i < values.lenght; i++)
+        if (isReportedValues(values[i])) {
+
 
         let row = document.createElement("tr");
 
@@ -84,7 +100,8 @@ function fillTable() {
         row.appendChild(cell);
 
         table.appendChild(row);
-        cursor.continue();
+        }
+        // cursor.continue();
       };
       db.close();
     };

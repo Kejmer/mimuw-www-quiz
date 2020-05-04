@@ -4,7 +4,7 @@
   "description": "",
   "main": "./views/dashboard.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "compile": "tsc scripts/*.ts"
   },
   "repository": {
     "type": "git",
