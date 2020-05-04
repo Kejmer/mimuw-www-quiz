@@ -538,3 +538,27 @@ function save(more_data : boolean) {
 
 withStatsBtn.addEventListener("click", () => save(true));
 noStatsBtn.addEventListener("click", () => save(false));
+
+/***************************************************************************/
+/**************************** TIMER ****************************************/
+/***************************************************************************/
+
+let minutesLabel = document.getElementById("minutes") as HTMLElement;
+let secondsLabel = document.getElementById("seconds") as HTMLElement;
+let totalSeconds = 0;
+setInterval(setTime, 1000);
+
+function setTime() {
+  ++totalSeconds;
+  secondsLabel.innerHTML = pad(totalSeconds % 60);
+  minutesLabel.innerHTML = pad(parseInt(totalSeconds / 60));
+}
+
+function pad(val) {
+  var valString = val + "";
+  if (valString.length < 2) {
+    return "0" + valString;
+  } else {
+    return valString;
+  }
+}

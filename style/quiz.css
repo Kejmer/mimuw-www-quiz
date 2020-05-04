@@ -99,6 +99,12 @@ section#summary button#with-stats {
   grid-area: stats;
 }
 
+section#timer {
+  grid-area: timer;
+  font-size: 30px;
+  place-self: center;
+}
+
 
 main {
   justify-content: center;
@@ -108,7 +114,7 @@ main {
   grid-row-gap: 50px;
 
   grid-template-areas:
-    "description question   ."
+    "description question   timer"
     "description answers    ."
     ".           navigation ."
     ".           summary    ."
@@ -135,10 +141,11 @@ nav button {
 @media only screen and (max-width: 700px) {
   main {
     grid-template-columns: auto;
-    grid-template-rows: auto auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto auto;
     grid-row-gap: 20px;
     grid-template-areas:
       "description"
+      "timer      "
       "question   "
       "answers    "
       "navigation "

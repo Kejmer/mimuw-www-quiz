@@ -1,6 +1,4 @@
 var queryString = window.location.search;
-// let startBtn = document.getElementById("start") as HTMLButtonElement;
-// console.log(startBtn);
 function getQuiz() {
     var quiz_option = document.querySelector('#quiz');
     window.location.replace('quiz.html?quiz=' + quiz_option.value);
@@ -28,41 +26,44 @@ function fillTable() {
             var db = openRequest_1.result;
             var transaction = db.transaction(["statistics"], 'readonly');
             var objectStore = transaction.objectStore("statistics");
-            var index = objectStore.index('id_idx');
-            index.openCursor().onsuccess = function (e) {
-                var cursor = e.target.result;
+            // let index = objectStore.index('id_idx');
+            var request = objectStore.getAll();
+            request.onsuccess = function (e) {
+                // let cursor : IDBObjectStore = e.target.result;
+                console.log(request);
+                var values = request.result;
                 var row = document.createElement("tr");
                 var cell = document.createElement("td");
-                if (e.target.result.value.when !== undefined)
-                    cell.innerText = e.target.result.value.when;
+                if (values.when !== undefined)
+                    cell.innerText = values.when;
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.quiz !== undefined)
-                    cell.innerText = e.target.result.value.quiz;
+                if (values.quiz !== undefined)
+                    cell.innerText = values.quiz;
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.result !== undefined)
-                    cell.innerText = e.target.result.value.result;
+                if (values.result !== undefined)
+                    cell.innerText = values.result;
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.score !== undefined)
-                    cell.innerText = e.target.result.value.score;
+                if (values.score !== undefined)
+                    cell.innerText = values.score;
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.avg !== undefined)
-                    cell.innerText = e.target.result.value.avg + 's';
+                if (values.avg !== undefined)
+                    cell.innerText = values.avg + 's';
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.penalty !== undefined)
-                    cell.innerText = e.target.result.value.penalty;
+                if (values.penalty !== undefined)
+                    cell.innerText = values.penalty;
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.fastest !== undefined)
-                    cell.innerText = e.target.result.value.fastest + 's';
+                if (values.fastest !== undefined)
+                    cell.innerText = values.fastest + 's';
                 row.appendChild(cell);
                 cell = document.createElement("td");
-                if (e.target.result.value.slowest !== undefined)
-                    cell.innerText = e.target.result.value.slowest + 's';
+                if (values.slowest !== undefined)
+                    cell.innerText = values.slowest + 's';
                 row.appendChild(cell);
                 table.appendChild(row);
                 cursor["continue"]();
