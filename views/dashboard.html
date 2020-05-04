@@ -6,39 +6,52 @@
   <title>Quiz IT</title>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
   <link rel='stylesheet' type='text/css' media='screen' href='../style/main.css'>
+  <link rel='stylesheet' type='text/css' media='screen' href='../style/dashboard.css'>
 </head>
 <body>
   <header>
-    <h1><a href="dashboard.html">Wybierz swój Quiz</a></h1>
+    <h1><a href="dashboard.html">Quiz it</a></h1>
   </header>
   <main>
-    <p>Wybierz swój quiz z dostępnych!</p>
-    <select name="quiz" id="quiz">
-      <optgroup label="Łatwy">
-        <option value="adding">Dodajemy!</option>
-        <option value="substracting">Odejmujemy!</option>
-        <option value="multypling">Mnożymy!</option>
-        <option value="dividing">Dzielimy!</option>
-      </optgroup>
-      <optgroup label="Średni">
-        <option value="Przegladarka">Szybkie Palce</option>
-        <option value="Vim">Vim</option>
-        <option value="Visual-Studio">Visual Studio</option>
-      </optgroup>
-      <optgroup label="Trudny">
-        <option value="Kompilator">Kompilator</option>
-        <option value="Automat">Automat</option>
-        <option value="Max-Flow">Max-Flow</option>
-      </optgroup>
-    </select>
+    <section id="quiz-available">
+      <p>Wybierz swój quiz z dostępnych!</p>
+      <select name="quiz" id="quiz">
+        <optgroup label="Łatwy">
+          <option value="adding">Dodajemy!</option>
+          <option value="substracting">Odejmujemy!</option>
+          <option value="multypling">Mnożymy!</option>
+          <option value="dividing">Dzielimy!</option>
+        </optgroup>
+        <optgroup label="Średni">
+          <option value="fast-fingers">Szybkie Palce</option>
+          <!-- <option value="Vim">Vim</option> -->
+          <!-- <option value="Visual-Studio">Visual Studio</option> -->
+        </optgroup><!--
+        <optgroup label="Trudny">
+          <option value="Kompilator">Kompilator</option>
+          <option value="Automat">Automat</option>
+          <option value="Max-Flow">Max-Flow</option>
+        </optgroup> -->
+      </select>
+    </section>
     <section id="button">
       <button id="start">Start</button>
     </section>
-      <!-- <p><a id="quiz-submit" class="btn" href='' onclick="getQuiz()">Start</a></p> -->
+    <section id="quiz-custom">
+    </section>
+    <table id="stats">
+      <tr>
+        <th>Kiedy</th>
+        <th>Nazwa</th>
+        <th>Odpowiedzi</th>
+        <th>Punkty</th>
+        <th>Średni czas</th>
+        <th>Kara</th>
+        <th>Najszybsza odpowiedź</th>
+        <th>Najwolniejsza odpowiedź</th>
+      </tr>
+    </table>
   </main>
-  <footer>
-    Pozdrowienia z podziemia
-  </footer>
 </body>
 <script src='../script/dashboard.js'></script>
 </html>

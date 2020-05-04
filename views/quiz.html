@@ -11,11 +11,17 @@
 <body>
   <header>
     <h1><a href="dashboard.html">Quiz it</a></h1>
-    <h2>Nazwa Quizu</h2>
+    <h2 id="quiz-name">Nazwa Quizu</h2>
   </header>
   <main>
+    <section id="description">
+      <p id="desc"></p>
+      <p id="penalty"></p>
+    </section>
     <section id="question">
       <button id="start">Start</button>
+      <p id="counter"></p>
+      <p id="equation"></p>
     </section>
     <section id="answers" class="hidden">
       <button class="quiz-ans"><p></p></button>
@@ -25,13 +31,24 @@
     </section>
     <nav id="question-btns" class="hidden">
       <button id="previous">Poprzednie</button>
-      <button id="stop" disabled="true">STOP</button>
       <button id="next">Następne</button>
+      <button id="stop" disabled="true">STOP</button>
+      <button id="cancel">Anuluj</button>
     </nav>
+    <section id="summary" class="hidden">
+      <table id="stats">
+        <tr>
+          <th>Nr.</th>
+          <th>Twoja odpowiedź</th>
+          <th>Poprawna odpowiedź</th>
+          <th>Czas</th>
+          <th>Kara</th>
+        </tr>
+      </table>
+      <button id="no-stats">Zapisz</button>
+      <button id="with-stats">Zapisz ze statystykami</button>
+    </section>
   </main>
-  <footer>
-    Pozdrowienia z podziemia
-  </footer>
 </body>
 <script src='../script/quiz.js'></script>
 </html>

@@ -5,6 +5,7 @@ section#answers {
   grid-column-gap: 15px;
   grid-row-gap: 10px;
 
+  justify-self: center;
   grid-area: answers;
 }
 
@@ -13,6 +14,41 @@ section#question {
   font-size: 40px;
 
   grid-area: question;
+}
+
+section#question p#counter {
+  margin-top: 5px;
+  font-size: 16px;
+}
+
+section#question p#equation {
+  margin-top: 20px;
+}
+
+section#question p {
+  margin: 0;
+}
+
+section#description {
+  border: 1px solid black;
+  background-color: #626778;
+  grid-area: description;
+  height: 320px;
+
+  display: grid;
+}
+
+section#description p {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+section#description p#description {
+  align-self: start;
+}
+
+section#description p#penalty {
+  align-self: end;
 }
 
 .quiz-ans {
@@ -29,24 +65,54 @@ section#question {
 
 nav#question-btns {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto auto auto;
   grid-column-gap: 20px;
   grid-template-rows: auto;
 
   grid-area: navigation;
 }
 
+section#summary {
+  justify-self: center;
+  grid-area: summary;
+
+  display: grid;
+  grid-row-gap: 10px;
+  grid-column-gap: 10px;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+
+  grid-template-areas:
+    "table     table"
+    "no        stats";
+}
+
+section#summary table {
+  grid-area: table;
+}
+
+section#summary button#no-stats {
+  grid-area: no;
+}
+
+section#summary button#with-stats {
+  grid-area: stats;
+}
+
+
 main {
   justify-content: center;
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: 20% 60% 20%;
   grid-template-rows: auto auto auto;
   grid-row-gap: 50px;
 
   grid-template-areas:
-    ". question   ."
-    ". answers    ."
-    ". navigation .";
+    "description question   ."
+    "description answers    ."
+    ".           navigation ."
+    ".           summary    ."
+  ;
 }
 
 
@@ -54,11 +120,53 @@ main {
   background-color: yellow;
 }
 
-.correct.quiz-ans {
+.correct.quiz-ans, .correct {
   background-color: green;
 }
 
-.incorrect.quiz-ans {
+.incorrect.quiz-ans, .incorrect {
   background-color: red;
 }
 
+nav button {
+  height: 100px;
+}
+
+@media only screen and (max-width: 700px) {
+  main {
+    grid-template-columns: auto;
+    grid-template-rows: auto auto auto auto auto;
+    grid-row-gap: 20px;
+    grid-template-areas:
+      "description"
+      "question   "
+      "answers    "
+      "navigation "
+      "summary    "
+    ;
+  }
+  section#answers {
+    grid-template-columns: 200px 200px;
+  }
+
+  nav#question-btns {
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
+
+    grid-area: navigation;
+  }
+
+  section#description {
+    height: 200px;
+  }
+}
+
+@media only screen and (max-width: 400px) {
+  section#answers {
+    grid-template-columns: 200px;
+    grid-template-rows: auto auto auto auto;
+  }
+
+}

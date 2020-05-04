@@ -3,7 +3,49 @@ main {
   justify-content: center;
   grid-template-columns: auto;
   grid-template-rows: auto auto auto;
+  grid-row-gap: 15px;
+  text-align: center;
 
   grid-template-areas:
-    "";
+    "pick"
+    "custom"
+    "fire"
+    ;
+}
+
+section#quiz-available {
+  grid-area: pick;
+}
+
+section#quiz-custom {
+  grid-area: custom;
+}
+
+section#button {
+  grid-area: fire;
+}
+
+@media only screen and (max-width: 500px) {
+  table th:nth-child(8),
+  table th:nth-child(7),
+  table th:nth-child(6),
+  table td:nth-child(6),
+  table td:nth-child(8),
+  table td:nth-child(7) {
+    display: none;
+  }
+
+  table {
+    font-size: 10px;
+  }
+}
+
+@media only screen and (max-width: 420px) {
+  table th:nth-child(1),
+  table th:nth-child(5),
+  table td:nth-child(1),
+  table td:nth-child(5)
+  {
+    display: none;
+  }
 }
