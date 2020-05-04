@@ -4,7 +4,7 @@
   "description": "",
   "main": "./views/dashboard.html",
   "scripts": {
-    "compile": "tsc scripts/*.ts"
+    "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts"
   },
   "repository": {
     "type": "git",
