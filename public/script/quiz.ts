@@ -2,94 +2,6 @@
 /****************************** CLASSES ************************************/
 /***************************************************************************/
 
-let quizes = [
-`{
-  "question_count": 6,
-  "description": "Nic dodać nic ująć!",
-  "min_prod": 5,
-  "max_prod": 20,
-  "min_qlen": 2,
-  "max_qlen": 3,
-  "variance": 20,
-  "penalty": 5,
-  "signs": ["-"],
-  "name": "Odejmujemy!"
-}`,
-`{
-  "question_count": 12,
-  "description": "To ja jestem Spartakusem!",
-  "min_prod": 1,
-  "max_prod": 1000,
-  "min_qlen": 1,
-  "max_qlen": 2,
-  "variance": 0,
-  "penalty": 5,
-  "signs": ["-"],
-  "name": "Klony!"
-}`,
-`{
-  "question_count": 6,
-  "description": "Mnoż Mnoż!",
-  "min_prod": 2,
-  "max_prod": 25,
-  "min_qlen": 2,
-  "max_qlen": 4,
-  "variance": 40,
-  "penalty": 5,
-  "signs": ["*"],
-  "name": "Mnożymy!"
-}`,
-`{
-  "question_count": 6,
-  "description": "Nie wybrzydzam!",
-  "min_prod": 5,
-  "max_prod": 20,
-  "min_qlen": 2,
-  "max_qlen": 5,
-  "variance": 20,
-  "penalty": 5,
-  "signs": ["+", "-", "3"],
-  "name": "Mieszanka studencka!"
-}`,
-`{
-  "question_count": 6,
-  "description": "Miej celne oko!",
-  "min_prod": 10,
-  "max_prod": 100,
-  "min_qlen": 1,
-  "max_qlen": 2,
-  "variance": 100,
-  "penalty": 999,
-  "signs": ["+"],
-  "name": "Szybkie Palce!"
-}`,
-`{
-  "question_count": 6,
-  "description": "Dodaj tyle ile możesz!",
-  "min_prod": 5,
-  "max_prod": 20,
-  "min_qlen": 2,
-  "max_qlen": 3,
-  "variance": 20,
-  "penalty": 5,
-  "signs": ["+"],
-  "name": "Dodajemy!"
-}`
-]
-
-interface QuizRules {
-  question_count : number;
-  description: string;
-  min_prod : number;
-  max_prod : number;
-  min_qlen : number;
-  max_qlen : number;
-  variance : number;
-  penalty : number;
-  signs: string[];
-  name: string;
-}
-
 function isQuizRules(obj : any) : obj is QuizRules {
   return ( obj.penalty !== undefined &&
     obj.question_count !== undefined &&
@@ -98,13 +10,13 @@ function isQuizRules(obj : any) : obj is QuizRules {
     obj.max_prod !== undefined &&
     obj.min_qlen !== undefined &&
     obj.max_qlen !== undefined &&
-    obj.variance !== undefined &&
+    obj.range !== undefined &&
     obj.signs !== undefined &&
     obj.name !== undefined
-    );
+  );
 }
 
-const allowed_operations : Set<string> = new Set(['+', '-', '*']);
+const allowed_operations : Set<string> = new Set(['+', '-', '*', '/']);
 
 class Quiz {
   private success : boolean;
@@ -116,7 +28,7 @@ class Quiz {
     if (isQuizRules(parsed)) {
       this.success = true;
       this.rules = parsed;
-      this.rules.variance = Math.floor(this.rules.variance);
+      this.rules.range = Math.floor(this.rules.range);
       this.rules.question_count = Math.floor(this.rules.question_count);
 
       const temp_set : Set<string> = new Set();
@@ -127,7 +39,7 @@ class Quiz {
       this.signs = Array.from(temp_set);
       if (this.signs.length <= 0 || this.rules.min_prod > this.rules.max_prod ||
           this.rules.min_qlen > this.rules.max_qlen || this.rules.min_qlen < 1 ||
-          this.rules.variance < 0 || this.rules.question_count < 1)
+          this.rules.range < 0 || this.rules.question_count < 1)
         this.success = false;
     } else {
       this.success = false;
@@ -167,7 +79,7 @@ class Quiz {
   }
 
   public getSimilar(num : number) : number {
-    let random = Math.floor(Math.random() * this.rules.variance);
+    let random = Math.floor(Math.random() * this.rules.range);
     const sign = Math.floor(Math.random() - 0.5);
     if (sign === 0)
       random = -random;
@@ -205,7 +117,16 @@ class Question {
 
       switch (sign) {
         case '/':
-          prod--;
+          if (prod == 0)
+            prod++;
+          while (previous_prod % prod) {
+            if (prod < 0) {
+              prod++;
+            } else {
+              prod--;
+            }
+          }
+          previous_prod /= prod;
           break;
         case '*':
           previous_prod *= prod;
@@ -215,7 +136,7 @@ class Question {
           previous_prod = prod;
       }
 
-      if (previous_prod < 0)
+      if (prod < 0)
         this.question += '(' + prod.toString() + ')';
       else
         this.question += prod.toString();
@@ -521,7 +442,7 @@ function generateStats() {
 function getData(more_data : boolean) {
   let correct = 0;
   let penalty = 0;
-  let avg = 0;
+  let avg = 0.;
   let slowest = 0;
   let fastest = 100000000000000000000;
 
@@ -543,7 +464,7 @@ function getData(more_data : boolean) {
   if (more_data) {
     _fastest = (fastest / 1000).toFixed(2);
     _slowest = (slowest / 1000).toFixed(2);
-    _avg = ((avg / quiz_size) / 1000).toFixed(2);
+    _avg = ((avg / quiz_size)/1000).toFixed(2);
     _penalty = penalty;
   }
 
@@ -553,7 +474,7 @@ function getData(more_data : boolean) {
     score: score.toFixed(2),
     quiz: quiz.getName(),
     penalty: _penalty,
-    avg: avg,
+    avg: _avg,
     slowest: _slowest,
     fastest: _fastest
   }

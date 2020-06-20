@@ -51,7 +51,7 @@ let quizes = [
   "name": "Mieszanka studencka!"
 }`,
     `{
-  "question_count": 6,
+  "question_count": 15,
   "description": "Miej celne oko!",
   "min_prod": 10,
   "max_prod": 100,
@@ -73,6 +73,18 @@ let quizes = [
   "penalty": 5,
   "signs": ["+"],
   "name": "Dodajemy!"
+}`,
+    `{
+  "question_count": 10,
+  "description": "Podziel się z całą klasą!",
+  "min_prod": 2,
+  "max_prod": 50,
+  "min_qlen": 2,
+  "max_qlen": 4,
+  "variance": 50,
+  "penalty": 13,
+  "signs": ["/", "+", "*"],
+  "name": "Ponad podziałami!"
 }`
 ];
 function isQuizRules(obj) {
@@ -87,7 +99,7 @@ function isQuizRules(obj) {
         obj.signs !== undefined &&
         obj.name !== undefined);
 }
-const allowed_operations = new Set(['+', '-', '*']);
+const allowed_operations = new Set(['+', '-', '*', '/']);
 class Quiz {
     constructor(rules) {
         const parsed = JSON.parse(rules);
@@ -161,7 +173,17 @@ class Question {
             this.question += sign;
             switch (sign) {
                 case '/':
-                    prod--;
+                    if (prod == 0)
+                        prod++;
+                    while (previous_prod % prod) {
+                        if (prod < 0) {
+                            prod++;
+                        }
+                        else {
+                            prod--;
+                        }
+                    }
+                    previous_prod /= prod;
                     break;
                 case '*':
                     previous_prod *= prod;
@@ -170,7 +192,7 @@ class Question {
                 case '-':
                     previous_prod = prod;
             }
-            if (previous_prod < 0)
+            if (prod < 0)
                 this.question += '(' + prod.toString() + ')';
             else
                 this.question += prod.toString();
@@ -434,7 +456,7 @@ function generateStats() {
 function getData(more_data) {
     let correct = 0;
     let penalty = 0;
-    let avg = 0;
+    let avg = 0.;
     let slowest = 0;
     let fastest = 100000000000000000000;
     for (let i = 0; i < quiz_size; i++) {
@@ -463,7 +485,7 @@ function getData(more_data) {
         score: score.toFixed(2),
         quiz: quiz.getName(),
         penalty: _penalty,
-        avg: avg,
+        avg: _avg,
         slowest: _slowest,
         fastest: _fastest
     };

@@ -73,6 +73,13 @@ th, td {
     border: 1px solid #d4d4d4;
 }
 
+#home {
+  text-align: center;
+  width: 100%;
+  color: black;
+  font-size: 30px;
+}
+
 @media only screen and (max-width: 500px) {
   table {
     font-size: 10px;

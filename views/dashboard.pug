@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  header
+    h1 Quiz it
+  main
+    section#quiz-available
+      p Sprawdź dostępne quizy!
+      select#quiz(name="quiz")
+        each quiz in quiz_set
+          option(value=quiz.id)= quiz.name
+    section#button
+      button#start Zobacz
+    section#quiz-custom
+      a(href="/creator") Dodaj własny quiz!
+  script(src="/script/dashboard.js")

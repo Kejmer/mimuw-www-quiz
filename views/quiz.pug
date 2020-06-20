@@ -1,0 +1,40 @@
+extends layout
+
+block content
+  header
+    h1 Quiz it
+    h2#quiz-name quiz_name
+  main
+    section#timer
+      label#minutes 00
+      \:
+      label#seconds 00
+    section#description
+      p#desc description
+      p#penalty penalty
+    section#question
+      p#counter
+      p#equation
+    section#answers
+      button.quiz-ans
+        p
+      button.quiz-ans
+        p
+      button.quiz-ans
+        p
+      button.quiz-ans
+        p
+    nav#question-btns
+      button#previous Poprzednie
+      button#next Następne
+      button#stop(disabled="true") STOP
+      button#cancel Anuluj
+    nav.hidden#summary
+      table#stats
+        tr
+          th Nr.
+          th Twoja odpowiedź
+          th Poprawna odpowiedź
+          th Czas
+          th Kara
+script(src="/script/quiz.js")

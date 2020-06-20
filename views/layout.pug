@@ -1,0 +1,13 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    title QuizIT
+    link(rel='stylesheet', href='/stylesheets/main.css')
+    link(rel='stylesheet', href='/stylesheets/' + css_file + '.css')
+  body
+    nav#home
+      a(href="/") główna
+      a(href="/login") zaloguj
+      a(href="/logout") wyloguj
+    block content

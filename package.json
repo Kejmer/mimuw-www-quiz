@@ -4,7 +4,8 @@
   "description": "",
   "main": "./views/dashboard.html",
   "scripts": {
-    "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts"
+    "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts",
+    "createdb": "npx ts-node backend/schema.ts"
   },
   "repository": {
     "type": "git",
@@ -16,5 +17,23 @@
   "bugs": {
     "url": "https://github.com/Kejmer/mimuw-www-quiz/issues"
   },
-  "homepage": "https://github.com/Kejmer/mimuw-www-quiz#readme"
+  "homepage": "https://github.com/Kejmer/mimuw-www-quiz#readme",
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.2",
+    "@types/csurf": "^1.9.36",
+    "@types/express": "^4.17.6",
+    "@types/express-session": "^1.17.0",
+    "@types/http-errors": "^1.6.3",
+    "@types/morgan": "^1.9.1",
+    "@types/sqlite3": "^3.1.6",
+    "cookie-parser": "^1.4.5",
+    "crypto": "^1.0.1",
+    "csurf": "^1.11.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "http-errors": "^1.7.3",
+    "morgan": "^1.10.0",
+    "sqlite": "^4.0.11",
+    "sqlite3": "^4.2.0"
+  }
 }
