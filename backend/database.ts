@@ -126,7 +126,7 @@ export function addQuiz(quiz: QuizRules) {
 export function login(username: string, password: string) : Promise<number> {
   return new Promise((res, rej) => {
     let db = openDatabase();
-    let hashed = hashPassword(password);
+    const hashed = hashPassword(password);
     db.get(`SELECT id FROM 'users' WHERE username = ? AND hashed_pass = ?`,
         [username, hashed],
         (err : any, row : any) => {
@@ -138,6 +138,18 @@ export function login(username: string, password: string) : Promise<number> {
       db.close();
     })
   })
+}
+
+export function changePassword(user_id : number, password: string) : Promise<void> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    const hashed = hashPassword(password);
+    db.run(`UPDATE users SET hashed_pass = ? WHERE id = ?`, [hashed, user_id], (err) => {
+      if (err) rej(err);
+      else res();
+    });
+    db.close();
+  });
 }
 
 export function getFinishedQuiz(quiz_id : number, user_id : number, db : sqlite.Database) : Promise<number> {

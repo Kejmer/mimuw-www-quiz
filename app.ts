@@ -57,14 +57,24 @@ app.post('/login', async (req, res, next) => {
 
 app.get('/logout', (req, res) => {
   req.session!.user = 0;
+  req.session!.user_id = 0;
   res.redirect("/");
 });
 
-app.get('/change_password', (req, res) => {
+app.get('/change_password', csrfProtection, (req, res) => {
   if (!req.session!.user) {
     res.redirect("/");
     return;
   }
+  res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken()});
+});
+
+app.post('/change_password', async (req, res) => {
+  if (req.session!.user) {
+    const password = req.body.password;
+    await database.changePassword(req.session!.user_id, password);
+  }
+  res.redirect("/logout");
 });
 
 // app.get('/creator', csrfProtection, (req, res, next) => {
