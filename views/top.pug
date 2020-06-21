@@ -3,7 +3,8 @@ extends layout
 block content
   header
     h1(href="/") QUIZ IT
-    h2= quiz_name
+    h2 #{quiz_name}
+    h3 Średni czas odpowiedzi to #{quiz_avg}
   main
     section#start
       a(href="/q/" + quiz_id) Przejdź do quizu
@@ -13,7 +14,7 @@ block content
           th Data
           th Kto
           th Punkty
-          th Czas
+          th Średni czas odpowiedzi
         each row in scoreboard_rows
           tr
             th= row.date

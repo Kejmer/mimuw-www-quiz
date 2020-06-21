@@ -161,8 +161,14 @@ app.post('/creator', csrfProtection, (req, res, next) => {
 app.get('/top/:quizId(\\d+)', async (req, res, next) => {
   const id = parseInt(req.params.quizId, 10);
   const rules : QuizRules = await database.getQuizRules(id);
+  if (rules === undefined) {
+    res.redirect("/");
+    return;
+  }
+  const quiz_avg = await database.getAvgTime(id);
   console.log(rules.name);
-  res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id), quiz_name: rules.name, quiz_id: id, logged_in: req.session!.user})
+  res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id),
+    quiz_name: rules.name, quiz_id: id, quiz_avg : quiz_avg, logged_in: req.session!.user})
 });
 
 app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {

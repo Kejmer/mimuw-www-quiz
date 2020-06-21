@@ -369,3 +369,13 @@ export function getStartTime(scoreboard_id : number) : Promise<number> {
     db.close();
   });
 }
+
+export function getAvgTime(quiz_id : number) : Promise<number> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.get(`SELECT AVG(time) as t_avg FROM scoreboard WHERE quiz_id = ?`, [quiz_id], (err, row) => {
+      if (err) rej();
+      else res(row.t_avg);
+    })
+  })
+}

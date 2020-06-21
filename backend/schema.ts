@@ -34,7 +34,7 @@ async function buildTable() {
       quiz_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
       date TEXT,
-      time TEXT NOT NULL,
+      time REAL NOT NULL,
       score INTEGER DEFAULT 0,
       status TEXT DEFAULT "running"
     )`);
