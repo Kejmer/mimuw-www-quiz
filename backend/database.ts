@@ -36,10 +36,18 @@ export interface Score {
   time : string;
 }
 
-export function openDatabase() : sqlite.Database {
-  let db = new sqlite.Database('quiz.db');
+function openNamedDatabase(name : string) : sqlite.Database {
+  let db = new sqlite.Database(name);
   db.run("PRAGMA busy_timeout = 10000");
   return db;
+}
+
+export function openDatabase() : sqlite.Database {
+  return openNamedDatabase('quiz.db');
+}
+
+function openSessionDatabase() : sqlite.Database {
+  return openNamedDatabase('sessions');
 }
 
 export function addQuizSchema(quiz : QuizRules, db : sqlite.Database) {
@@ -145,8 +153,16 @@ export function changePassword(user_id : number, password: string) : Promise<voi
     let db = openDatabase();
     const hashed = hashPassword(password);
     db.run(`UPDATE users SET hashed_pass = ? WHERE id = ?`, [hashed, user_id], (err) => {
-      if (err) rej(err);
-      else res();
+      if (err) {
+        rej(err);
+        return;
+      }
+      let db2 = openSessionDatabase();
+      db2.run(`DELETE FROM sessions WHERE sess LIKE ?`, ["%\"user_id\":" + user_id + "%"], (err) => {
+        if (err) rej(err);
+        else res();
+      })
+      db2.close();
     });
     db.close();
   });
