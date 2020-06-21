@@ -237,6 +237,12 @@ function noPickDisplay() {
 
 function setAnswers() {
   noPickDisplay();
+  if (quiz_status === QuizStatus.Finished) {
+    for (let i = 0; i < optionsRange; i++) {
+      if (questions[current_question].getOptions()[i] === questions[current_question].getCorrect())
+        answers[i].parentElement.classList.add("correct");
+    }
+  }
   if (picks[current_question] !== -1) {
     const ans = answers[picks[current_question]] as HTMLDivElement;
     let status : string;

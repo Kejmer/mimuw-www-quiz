@@ -240,6 +240,12 @@ function noPickDisplay() {
 }
 function setAnswers() {
     noPickDisplay();
+    if (quiz_status === QuizStatus.Finished) {
+        for (var i = 0; i < optionsRange; i++) {
+            if (questions[current_question].getOptions()[i] === questions[current_question].getCorrect())
+                answers[i].parentElement.classList.add("correct");
+        }
+    }
     if (picks[current_question] !== -1) {
         var ans = answers[picks[current_question]];
         var status_1;
