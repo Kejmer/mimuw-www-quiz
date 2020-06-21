@@ -96,9 +96,10 @@ export function getBestScores(quiz_id: number) : Promise<Score[]> {
     let db = openDatabase();
     db.all(`SELECT scoreboard.date, users.username, scoreboard.score, scoreboard.time FROM
       scoreboard JOIN users ON scoreboard.user_id = users.id
-      WHERE scoreboard.quiz_id = ? AND scoreboard.status = "running"
+      WHERE scoreboard.quiz_id = ? AND scoreboard.status = "finished"
       ORDER BY scoreboard.score ASC LIMIT 5
       `, quiz_id, (err, rows) => {
+        console.log(rows);
         if (err) rej(err);
         else res(rows);
       });
@@ -323,9 +324,9 @@ export function sendAnswers(scoreboard_id : number, picks : number[]) : Promise<
   let db = openDatabase();
   return new Promise((res, rej) => {
     db.run("BEGIN IMMEDIATE", [], () => {
-      db.run(`UPDATE scoreboard SET status = "finished", score = 3 WHERE id = ?`, [scoreboard_id], async (err) => {
+      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = 3 WHERE id = ?`,
+        [scoreboard_id, new Date().toLocaleString()], async (err) => {
         if (err) {
-          console.log(err);
           db.run("ROLLBACK");
           rej();
           return;
@@ -333,6 +334,7 @@ export function sendAnswers(scoreboard_id : number, picks : number[]) : Promise<
         await updateHistory(scoreboard_id, picks, 0, db);
         db.run("COMMIT");
         db.close(() =>{
+          console.log("ANSWERS SAVED TO DB");
           res();
         })
       });
@@ -348,7 +350,6 @@ function updateHistory(scoreboard_id : number, picks : number[], question_no : n
     db.run(`UPDATE history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
       [picks[question_no], scoreboard_id, question_no], (err) => {
          if (err) {
-           console.log(err);
            db.run("ROLLBACK");
            rej();
            return;

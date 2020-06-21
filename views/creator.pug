@@ -1,0 +1,58 @@
+extends layout
+
+block content
+  form(method='POST' action='/creator')
+    input(type="hidden" name="_csrf" value=csrfToken)
+    div.form-group
+      label(for='question_count') Liczba pytań:
+      br
+      input.form-control(type='number', name='question_count')
+    div.form-group
+      label(for='min_product') Minimalna wartość składników:
+      br
+      input.form-control(type='number', name='min_product')
+    div.form-group
+      label(for='max_product') Maksymalna wartość składników:
+      br
+      input.form-control(type='number', name='max_product')
+    div.form-group
+      label(for='min_length') Minimalna długość pytania:
+      br
+      input.form-control(type='number', name='min_length')
+    div.form-group
+      label(for='max_length') Maksymalna długość pytania:
+      br
+      input.form-control(type='number', name='max_length')
+    div.form-group
+      label(for='penalty') Kara za błędną odpowiedź:
+      br
+      input.form-control(type='number', name='penalty')
+    div.form-group
+      label(for='range') Wachanie wartości pytań:
+      br
+      input.form-control(type='number', name='range')
+    div.form-group
+      label(for='name') Nazwa Quizu:
+      br
+      input.form-control(type='text', name='name')
+    div.form-group
+      label(for='description') OPIS:
+      br
+      input.form-control(type='text', name='description')
+    div.form-group
+      label(for='adding') Dodawanie:
+      br
+      input.form-control(type='checkbox', name='adding')
+    div.form-group
+      label(for='substraction') Odejmowanie:
+      br
+      input.form-control(type='checkbox', name='substraction')
+    div.form-group
+      label(for='multiply') Mnożenie:
+      br
+      input.form-control(type='checkbox', name='multiply')
+    div.form-group
+      label(for='divide') Dzielenie:
+      br
+      input.form-control(type='checkbox', name='divide')
+    button(type='submit') WYŚLIJ

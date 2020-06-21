@@ -73,7 +73,6 @@ app.get('/logout', (req, res) => {
 
 app.get('/change_password', csrfProtection, (req, res) => {
   if (!req.session!.user) {
-      console.log("siem");
     res.redirect("/login");
     return;
   }
@@ -93,19 +92,77 @@ app.post('/change_password', csrfProtection, async (req, res) => {
   res.redirect("/");
 });
 
-// app.get('/creator', csrfProtection, (req, res, next) => {
+app.get('/creator', csrfProtection, (req, res, next) => {
+  if (!req.session!.user) {
+    res.redirect("/login");
+    return;
+  }
 
-// });
+  res.render('creator', {css_file : 'empty', csrfToken: req.csrfToken()});
+});
 
-// app.post('/creator', csrfProtection, (req, res, next) => {
+app.post('/creator', csrfProtection, (req, res, next) => {
+  if (!req.session!.user) {
+    res.redirect("/login");
+    return;
+  }
+  const question_count = req.body.question_count;
+  const min_product = req.body.min_product;
+  const max_product = req.body.max_product;
+  const min_length = req.body.min_length;
+  const max_length = req.body.max_length;
+  let description = req.body.description;
+  if (description === undefined)
+    description = "";
+  const penalty = req.body.penalty;
+  const range = req.body.range;
+  const name = req.body.name;
 
-// });
+  if (isNaN(question_count) || isNaN(min_product) || isNaN(max_product) || isNaN(min_length)
+    || isNaN(max_length) || isNaN(penalty)) {
+    next(createError(401));
+    return;
+  }
+
+  if (min_product > max_product || min_length >= max_length || penalty < 0 || name === "" || name === undefined
+    || min_length < 1 || question_count < 1) {
+    next(createError(401));
+    return;
+  }
+
+  let signs = "";
+  if (req.body.adding) signs += '+';
+  if (req.body.substraction) signs += '-';
+  if (req.body.multiply) signs += '*';
+  if (req.body.divide) signs += '/';
+  if (signs === "" && max_length > 2) {
+    next(createError(401));
+    return;
+  }
+
+  let rules : QuizRules =
+    {
+      question_count : question_count,
+      min_product : min_product,
+      max_product : max_product,
+      min_length : min_length,
+      max_length : max_length,
+      description : description,
+      penalty : penalty,
+      range : range,
+      name : name,
+      signs : signs
+    };
+
+  database.addQuiz(rules);
+  res.redirect("/");
+});
 
 app.get('/top/:quizId(\\d+)', async (req, res, next) => {
   const id = parseInt(req.params.quizId, 10);
   const rules : QuizRules = await database.getQuizRules(id);
   console.log(rules.name);
-  res.render('top', {css_file: 'empty', scoreboard_rows: [], quiz_name: rules.name, quiz_id: id})
+  res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id), quiz_name: rules.name, quiz_id: id})
 });
 
 app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
@@ -158,7 +215,7 @@ app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
 });
 
 app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
-  if (!req.session!.user) {
+  if (!req.session!.user_id) {
     res.redirect("/login");
     return;
   }

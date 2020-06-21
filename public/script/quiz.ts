@@ -335,7 +335,6 @@ function fetchQuestions() : Promise<JSON> {
 
 async function postAnswers() {
   const csrfInput = document.getElementById('csrf') as HTMLInputElement;
-  // picks.unshift(questions[0].getScoreboard())
   await fetch("http://localhost:8080/q/" + getQuizId(), {
     method: 'POST',
     body: JSON.stringify({
@@ -368,7 +367,6 @@ function quizStop() {
   questions[current_question].inactive();
   cancelBtn.disabled = true;
   stopBtn.disabled = true;
-  save();
   postAnswers();
 }
 
@@ -415,36 +413,6 @@ function getData(more_data : boolean) {
     fastest: _fastest
   }
 }
-
-function save() {
-  // if (!window.indexedDB) {
-  //   console.log("Your browser doesn't support a stable version of IndexedDB. Statistics feature will not be available.");
-  // } else {
-  //   let openRequest = window.indexedDB.open("store");
-
-  //   openRequest.onsuccess = () => {
-  //     let db = openRequest.result;
-  //     let transaction = db.transaction(["statistics"], "readwrite");
-
-  //     transaction.oncomplete = function(e : Event) {
-  //       console.log("All done!");
-  //       db.close();
-  //     };
-
-  //     let objectStore = transaction.objectStore("statistics");
-  //     let request = objectStore.add(getData(more_data));
-  //     request.onsuccess = function(e : Event) {
-  //       console.log(request.result);
-  //       console.log("Added successfully");
-  //     };
-  //   };
-  // }
-  setTimeout(function(){ window.location.replace('/top/' + getQuizId()); }, 100);
-  // window.location.replace('dashboard.html');
-}
-
-// withStatsBtn.addEventListener("click", () => save(true));
-// noStatsBtn.addEventListener("click", () => save(false));
 
 /***************************************************************************/
 /**************************** TIMER ****************************************/
