@@ -6,9 +6,12 @@ import logger from 'morgan';
 import csurf from 'csurf';
 import sqlite from 'sqlite3';
 import session from 'express-session';
+import cors from 'cors';
 let SQLiteStore = require('connect-sqlite3')(session);
 
 import * as database from './backend/database'
+import {Question, Score, QuestionPacked, QuizRules} from './backend/models'
+
 
 const app = express();
 const csrfProtection = csurf({ cookie: true });
@@ -23,6 +26,13 @@ app.use(logger('dev'));
 app.use(session({secret: "deadBEEF4242424242424242", resave: false, saveUninitialized: false, store: new SQLiteStore}));
 app.use(express.static(path.join(__dirname, 'public')));
 
+const cors_opt = {
+  origin: 'http://localhost:8080',
+  optionsSuccessStatus: 200
+}
+
+app.use(cors(cors_opt));
+
 
 app.get('/', async (req, res, next) => {
   const quiz_set = await database.allQuizes();
@@ -34,10 +44,10 @@ app.get('/login', csrfProtection, (req, res) => {
     res.redirect("/");
     return;
   }
-  res.render('login', {css_file: 'empty'});
+  res.render('login', {css_file: 'empty', csrfToken: req.csrfToken()});
 });
 
-app.post('/login', async (req, res, next) => {
+app.post('/login', csrfProtection, async (req, res, next) => {
   if (req.session!.user) {
     res.redirect("/");
     return;
@@ -51,7 +61,7 @@ app.post('/login', async (req, res, next) => {
     req.session!.user_id = user_id;
     res.redirect("/");
   } else {
-    res.render('login', {});
+    res.render('login', {css_file: 'empty', csrfToken: req.csrfToken()});
   }
 });
 
@@ -63,18 +73,24 @@ app.get('/logout', (req, res) => {
 
 app.get('/change_password', csrfProtection, (req, res) => {
   if (!req.session!.user) {
-    res.redirect("/");
+      console.log("siem");
+    res.redirect("/login");
     return;
   }
   res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken()});
 });
 
-app.post('/change_password', async (req, res) => {
+app.post('/change_password', csrfProtection, async (req, res) => {
   if (req.session!.user) {
     const password = req.body.password;
+    const repeated = req.body.repeated;
+    if (password !== repeated || password === "") {
+      res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken()});
+      return;
+    }
     await database.changePassword(req.session!.user_id, password);
   }
-  res.redirect("/logout");
+  res.redirect("/");
 });
 
 // app.get('/creator', csrfProtection, (req, res, next) => {
@@ -87,28 +103,64 @@ app.post('/change_password', async (req, res) => {
 
 app.get('/top/:quizId(\\d+)', async (req, res, next) => {
   const id = parseInt(req.params.quizId, 10);
-  const rules : database.QuizRules = await database.getQuizRules(id);
+  const rules : QuizRules = await database.getQuizRules(id);
   console.log(rules.name);
   res.render('top', {css_file: 'empty', scoreboard_rows: [], quiz_name: rules.name, quiz_id: id})
 });
 
+app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
+  const id = parseInt(req.params.quizId, 10);
+  console.log("Request for " + id + " quiz");
+  if (!req.session!.user_id) {
+    next(createError(401));
+    return;
+  }
+  const scoreboard_id = await database.getQuizScoreboard(id, req.session!.user_id);
+  let questions : QuestionPacked[] = await database.quizFromScoreboard(id);
+
+  if (questions[0].pick === -1) {
+    for (let q of questions)
+      q.correct = 0;
+  }
+
+  res.json({
+    questions : questions
+  });
+});
+
+app.post('/cancel/:quizId(\\d+)')
+
 app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
-  const id = parseInt(req.params.memeId, 10);
+  if (!req.session!.user_id) {
+    res.redirect("/login");
+    return;
+  }
+  const quiz_id = parseInt(req.params.quizId, 10);
+  const user_id = req.session!.user_id;
 
-  // if (pickedMeme === undefined) {
-  //   next(createError(404));
-  //   return;
-  // }
+  const rules : QuizRules = await database.getQuizRules(quiz_id);
+  if (rules === undefined) {
+    res.redirect("/")
+    return;
+  }
 
-  // const history = await pickedMeme.getHistory(db);
-  // res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
+  res.render('quiz', {css_file: 'quiz', rules: rules, id: quiz_id, csrfToken: req.csrfToken()});
 });
 
 app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
-  // if (!req.session.user) {
-  //   next(createError(401));
-  //   return;
-  // }
+  if (!req.session!.user) {
+    res.redirect("/login");
+    return;
+  }
+
+  const id = parseInt(req.params.quizId, 10);
+  const rules : QuizRules = await database.getQuizRules(id);
+  if (rules === undefined) {
+    res.redirect("/");
+    return;
+  }
+
+
 
   // const id = parseInt(req.params.memeId, 10);
   // if (isNaN(req.body.price)) {

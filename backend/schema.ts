@@ -42,6 +42,7 @@ async function buildTable() {
     CREATE TABLE history (
       quiz_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
+      scoreboard_id INTEGER NOT NULL,
       question_no INTEGER NOT NULL,
       question TEXT NOT NULL,
       first INTEGER NOT NULL,

@@ -1,5 +1,6 @@
 import * as sqlite from 'sqlite3';
 import {hashPassword} from './security'
+import {Question, Score, QuestionPacked, QuizRules} from './models'
 
 sqlite.verbose();
 const allowed_operations : Set<string> = new Set(['+', '-', '*', '/']);
@@ -16,25 +17,6 @@ function getSimilar(num : number, range : number) : number {
   return num + random;
 }
 
-export interface QuizRules {
-  question_count : number;
-  min_product : number;
-  max_product : number;
-  min_length : number;
-  max_length : number;
-  description: string;
-  penalty : number;
-  range : number;
-  signs: string;
-  name: string;
-}
-
-export interface Score {
-  date : string;
-  user : string;
-  points : string;
-  time : string;
-}
 
 function openNamedDatabase(name : string) : sqlite.Database {
   let db = new sqlite.Database(name);
@@ -87,7 +69,6 @@ export function allQuizes() : Promise<[number, string][]> {
   })
 }
 
-
 export function getQuizRules(id : number) : Promise<QuizRules> {
   return new Promise((res, rej) => {
     let db = openDatabase();
@@ -115,7 +96,7 @@ export function getBestScores(quiz_id: number) : Promise<Score[]> {
     let db = openDatabase();
     db.all(`SELECT scoreboard.date, users.username, scoreboard.score, scoreboard.time FROM
       scoreboard JOIN users ON scoreboard.user_id = users.id
-      WHERE scoreboard.quiz_id = ?
+      WHERE scoreboard.quiz_id = ? AND scoreboard.status = "running"
       ORDER BY scoreboard.score ASC LIMIT 5
       `, quiz_id, (err, rows) => {
         if (err) rej(err);
@@ -158,7 +139,7 @@ export function changePassword(user_id : number, password: string) : Promise<voi
         return;
       }
       let db2 = openSessionDatabase();
-      db2.run(`DELETE FROM sessions WHERE sess LIKE ?`, ["%\"user_id\":" + user_id + "%"], (err) => {
+      db2.run(`DELETE FROM sessions WHERE sess LIKE ?`, ["%\"user_id\":" + user_id + ",%"], (err) => {
         if (err) rej(err);
         else res();
       })
@@ -192,20 +173,61 @@ export function getRunningQuiz(quiz_id : number, user_id : number, db : sqlite.D
   });
 }
 
-export function prepareNewQuiz(quiz_id : number, user_id : number) : Promise<number> {
+export function getQuizScoreboard(quiz_id : number, user_id : number) : Promise<number> {
   return new Promise(async (res, rej) => {
     let questions = generateQuizQuestions(await getQuizRules(quiz_id));
     let db = openDatabase();
     db.run("BEGIN IMMEDIATE", [], async () => {
       const scoreboard_id : number = await newScoreboard(quiz_id, user_id, db);
+      let result = await getFinishedQuiz(quiz_id, user_id, db);
+      if (result === 0) {
+        result = await getRunningQuiz(quiz_id, user_id, db);
+      }
+      if (result !== scoreboard_id && result !== 0) {
+        db.run("ROLLBACK");
+        db.close();
+        res(result);
+        return;
+      }
+
       for (let i = 0; i < questions.length; i++) {
         questions[i].setScoreboard(scoreboard_id);
         createQuestion(questions[i], quiz_id, user_id, db);
       }
       db.run("COMMIT");
-      db.close();
+      db.close(() => {
+        res(scoreboard_id);
+      });
     })
   })
+}
+
+export function quizFromScoreboard(scoreboard_id : number) : Promise<QuestionPacked[]> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.all(`SELECT * FROM history WHERE scoreboard_id = ? ORDER BY question_no ASC`, [scoreboard_id], (err, rows) => {
+      if (err) rej(err);
+      else {
+        const result = rows.map((row) => {
+          return {
+            question_no : row.question_no,
+            question : row.question,
+            options : [
+              row.first,
+              row.second,
+              row.third,
+              row.fourth
+            ],
+            pick : row.picked,
+            time : row.time,
+            correct : row.correct
+          }
+        });
+        res(result);
+      }
+    });
+    db.close();
+  });
 }
 
 export function deactivate(user_id : number, scoreboard_id : number) : Promise<void> {
@@ -224,7 +246,6 @@ function newScoreboard(quiz_id : number, user_id : number, db : sqlite.Database)
   return new Promise((res, rej) => {
     db.run('INSERT INTO scoreboard (quiz_id, user_id, time) VALUES (?, ?, ?)',
       [quiz_id, user_id, Date.now()], function(err) {
-        console.log(this);
         if (err) rej(err);
         else res(this.lastID);
       });
@@ -260,7 +281,7 @@ function generateQuizQuestions(rules : QuizRules) : Question[] {
         case '/':
           if (prod == 0)  prod++;
           while (product_mem % prod) {
-            if (prod < 0) prod--;
+            if (prod > 0) prod--;
             else          prod++;
           }
           product_mem /= prod;
@@ -281,138 +302,9 @@ function generateQuizQuestions(rules : QuizRules) : Question[] {
     for (let i = 0; i < 4; i++)
       options[i] = getSimilar(correct_answer, rules.range);
     options[Math.floor(Math.random() * 4)] = correct_answer;
-    generated_questions[j] = new Question(j, question, options, -1, correct_answer);
+    generated_questions[j] = new Question(j, question, options, -1, correct_answer, 0);
   }
   return generated_questions;
-}
-
-// export function clearQuiz(user_id : number, quiz_id : number) {
-
-// }
-
-// export class Quiz {
-//   constructor(rules : string) {
-//     const parsed = JSON.parse(rules);
-//     if (isQuizRules(parsed)) {
-//       if (this.signs.length <= 0 || this.rules.min_prod > this.rules.max_prod ||
-//           this.rules.min_qlen > this.rules.max_qlen || this.rules.min_qlen < 1 ||
-//           this.rules.range < 0 || this.rules.question_count < 1)
-//         this.success = false;
-//     } else {
-//       this.success = false;
-//     }
-//   }
-
-//   private randomRange(min : number, max : number) : number {
-//     return Math.floor(Math.random() * (max - min) + min);
-//   }
-
-//   public getRandomProduct() : number {
-//     return this.randomRange(this.rules.min_prod, this.rules.max_prod);
-//   }
-
-//   public getQuestionLength() : number {
-//     return this.randomRange(this.rules.min_qlen, this.rules.max_qlen);
-//   }
-
-//   public getSign() : string {
-//     return this.signs[Math.floor(Math.random() * this.signs.length)];
-//   }
-
-//   public getQuestionCount() : number {
-//     return this.rules.question_count;
-//   }
-
-//   public getName() : string {
-//     return this.rules.name;
-//   }
-
-//   public getDescription() : string {
-//     return this.rules.description;
-//   }
-
-//   public getPenalty() : number {
-//     return this.rules.penalty;
-//   }
-// }
-
-
-export class Question {
-  private question_no : number;
-  private question : string;
-  private options : number[];
-  private pick : number;
-  private correct_answer : number;
-  private scoreboard_id : number;
-
-  private time : number;
-  private start_time : Date;
-
-  constructor(question_no : number, question : string, options : number[], pick : number, correct_answer : number) {
-    this.question_no = question_no;
-    this.question = question;
-    this.options = options;
-    this.pick = pick;
-    this.correct_answer = correct_answer;
-    this.time = 0;
-    this.scoreboard_id = 0;
-    this.start_time = new Date();
-  }
-
-  public getQuestion() : string {
-    return this.question;
-  }
-
-  public getOptions() : number[] {
-    return this.options;
-  }
-
-  public getPick() : number {
-    return this.pick;
-  }
-
-  public setPick(pick : number) {
-    this.pick = pick;
-  }
-
-  public getTime() : number {
-    return this.time;
-  }
-
-  public active() {
-    this.start_time = new Date();
-  }
-
-  public getQuestionNo() {
-    return this.question_no;
-  }
-
-  public getScoreboard() : number {
-    return this.scoreboard_id;
-  }
-
-  public setScoreboard(id : number) {
-    this.scoreboard_id = id;
-  }
-
-  public inactive() {
-    let end_time = new Date();
-    this.time += end_time.getTime() - this.start_time.getTime();
-  }
-
-  public getPacked() : any[] {
-    let result : any[] = [];
-    result.push(this.question_no);
-    result.push(this.question);
-    result.push(this.options[0]);
-    result.push(this.options[1]);
-    result.push(this.options[2]);
-    result.push(this.options[3]);
-    result.push(this.time);
-    result.push(this.correct_answer);
-    result.push(this.pick);
-    return result;
-  }
 }
 
 function createQuestion(question : Question, quiz_id : number, user_id : number, db : sqlite.Database) : Promise<void> {
@@ -420,7 +312,7 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   questionPack.unshift(user_id);
   questionPack.unshift(quiz_id);
   return new Promise((res, rej) => {
-    db.run(`INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?,?,?)`, questionPack, (err) => {
+    db.run(`INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, questionPack, (err) => {
       if (err) rej(err);
       else res();
     });
