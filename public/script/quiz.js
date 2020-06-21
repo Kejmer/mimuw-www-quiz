@@ -182,7 +182,7 @@ function quizStart() {
                     for (i = 0; i < quiz_size; i++) {
                         _pick = picks[i];
                         if (_pick !== -1)
-                            QuizStatus.Finished;
+                            quiz_status = QuizStatus.Finished;
                         if (_pick === -1) {
                             question_status[i] = QuestionStatus.Empty;
                         }
@@ -304,7 +304,6 @@ function prevQuestion() {
 nextBtn.addEventListener("click", function () { return nextQuestion(); });
 prevBtn.addEventListener("click", function () { return prevQuestion(); });
 cancelBtn.addEventListener("click", function () { return quizCancel(); });
-// startBtn.addEventListener("click", () => quizStart());
 stopBtn.addEventListener("click", function () { return quizStop(); });
 /***************************************************************************/
 /**************************** QUIZ "BACKEND" *******************************/
@@ -328,7 +327,6 @@ function postAnswers() {
             switch (_a.label) {
                 case 0:
                     csrfInput = document.getElementById('csrf');
-                    // picks.unshift(questions[0].getScoreboard())
                     return [4 /*yield*/, fetch("http://localhost:8080/q/" + getQuizId(), {
                             method: 'POST',
                             body: JSON.stringify({
@@ -341,7 +339,6 @@ function postAnswers() {
                             }
                         })];
                 case 1:
-                    // picks.unshift(questions[0].getScoreboard())
                     _a.sent();
                     window.location.replace('/top/' + getQuizId());
                     return [2 /*return*/];
@@ -354,17 +351,6 @@ function quizCancel() {
         return;
     window.location.replace('cancel/' + getQuizId());
 }
-// function checkAnswers() {
-//   for (let i = 0; i < quiz_size; i++) {
-//     if (questions[i].checkAnswer(picks[i]))
-//       question_status[i] = QuestionStatus.Correct;
-//     else {
-//       question_status[i] = QuestionStatus.Incorrect;
-//       score += quiz.getPenalty();
-//     }
-//     score += questions[i].getTime() / 1000;
-//   }
-// }
 function quizStop() {
     if (quiz_status !== QuizStatus.Running)
         return;
@@ -375,103 +361,8 @@ function quizStop() {
     questions[current_question].inactive();
     cancelBtn.disabled = true;
     stopBtn.disabled = true;
-    // checkAnswers();
-    // setAnswers();
-    // generateStats();
-    // document.querySelector('section#summary').classList.remove('hidden');
-    // quiz_status = QuizStatus.Finished;
-    save();
     postAnswers();
 }
-/***************************************************************************/
-/***************************** STATISTICS **********************************/
-/***************************************************************************/
-// function generateStats() {
-//   for (let i = 0; i < quiz_size; i++) {
-//     let row = document.createElement("tr");
-//     if (question_status[i] === QuestionStatus.Correct)
-//       row.classList.add("correct");
-//     else
-//       row.classList.add("incorrect");
-//     let cell = document.createElement("td");
-//     cell.innerText = (i+1).toString();
-//     row.appendChild(cell);
-//     cell = document.createElement("td");
-//     cell.innerText = questions[i].getOptions()[picks[i]].toString();
-//     row.appendChild(cell);
-//     cell = document.createElement("td");
-//     cell.innerText = questions[i].getCorrect().toString();
-//     row.appendChild(cell);
-//     cell = document.createElement("td");
-//     cell.innerText = (questions[i].getTime()/1000).toFixed(2).toString();
-//     row.appendChild(cell);
-//     cell = document.createElement("td");
-//     cell.innerText = quiz.getPenalty().toString();
-//     row.appendChild(cell);
-//     table.appendChild(row);
-//   }
-// }
-function getData(more_data) {
-    var correct = 0;
-    var penalty = 0;
-    var avg = 0.;
-    var slowest = 0;
-    var fastest = 100000000000000000000;
-    for (var i = 0; i < quiz_size; i++) {
-        if (question_status[i] === QuestionStatus.Correct)
-            correct++;
-        // else
-        // penalty += quiz.getPenalty();
-        var time = questions[i].getTime();
-        avg += time;
-        slowest = Math.max(slowest, time);
-        fastest = Math.min(fastest, time);
-    }
-    var _fastest = undefined;
-    var _slowest = undefined;
-    var _avg = undefined;
-    var _penalty = undefined;
-    if (more_data) {
-        _fastest = (fastest / 1000).toFixed(2);
-        _slowest = (slowest / 1000).toFixed(2);
-        _avg = ((avg / quiz_size) / 1000).toFixed(2);
-        _penalty = penalty;
-    }
-    return {
-        when: new Date().toLocaleString(),
-        // result: correct.toString() + '/' + quiz_size.toString() ,
-        score: score.toFixed(2),
-        penalty: _penalty,
-        avg: _avg,
-        slowest: _slowest,
-        fastest: _fastest
-    };
-}
-function save() {
-    // if (!window.indexedDB) {
-    //   console.log("Your browser doesn't support a stable version of IndexedDB. Statistics feature will not be available.");
-    // } else {
-    //   let openRequest = window.indexedDB.open("store");
-    //   openRequest.onsuccess = () => {
-    //     let db = openRequest.result;
-    //     let transaction = db.transaction(["statistics"], "readwrite");
-    //     transaction.oncomplete = function(e : Event) {
-    //       console.log("All done!");
-    //       db.close();
-    //     };
-    //     let objectStore = transaction.objectStore("statistics");
-    //     let request = objectStore.add(getData(more_data));
-    //     request.onsuccess = function(e : Event) {
-    //       console.log(request.result);
-    //       console.log("Added successfully");
-    //     };
-    //   };
-    // }
-    setTimeout(function () { window.location.replace('/top/' + getQuizId()); }, 100);
-    // window.location.replace('dashboard.html');
-}
-// withStatsBtn.addEventListener("click", () => save(true));
-// noStatsBtn.addEventListener("click", () => save(false));
 /***************************************************************************/
 /**************************** TIMER ****************************************/
 /***************************************************************************/

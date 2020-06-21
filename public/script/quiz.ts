@@ -181,7 +181,7 @@ async function quizStart() {
   for (let i = 0; i < quiz_size; i++) {
     const _pick = picks[i];
     if (_pick !== -1)
-      QuizStatus.Finished;
+      quiz_status = QuizStatus.Finished;
     if (_pick === -1) {
       question_status[i] = QuestionStatus.Empty;
     } else {
