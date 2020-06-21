@@ -29,6 +29,13 @@ export interface QuizRules {
   name: string;
 }
 
+export interface Score {
+  date : string;
+  user : string;
+  points : string;
+  time : string;
+}
+
 export function openDatabase() : sqlite.Database {
   let db = new sqlite.Database('quiz.db');
   db.run("PRAGMA busy_timeout = 10000");
@@ -72,15 +79,42 @@ export function allQuizes() : Promise<[number, string][]> {
   })
 }
 
+
 export function getQuizRules(id : number) : Promise<QuizRules> {
   return new Promise((res, rej) => {
     let db = openDatabase();
-    db.get('SELECT * FROM templates WHERE id = ?', id, (err, row) => {
+    db.get(`SELECT
+      question_count,
+      min_product,
+      max_product,
+      min_length,
+      max_length,
+      description,
+      penalty,
+      range,
+      operations as signs,
+      name
+      FROM templates WHERE id = ?`, id, (err, row) => {
       if (err) rej(err);
       else res(row)
     });
     db.close();
   });
+}
+
+export function getBestScores(quiz_id: number) : Promise<Score[]> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.all(`SELECT scoreboard.date, users.username, scoreboard.score, scoreboard.time FROM
+      scoreboard JOIN users ON scoreboard.user_id = users.id
+      WHERE scoreboard.quiz_id = ?
+      ORDER BY scoreboard.score ASC LIMIT 5
+      `, quiz_id, (err, rows) => {
+        if (err) rej(err);
+        else res(rows);
+      });
+    db.close();
+  })
 }
 
 export function addQuiz(quiz: QuizRules) {

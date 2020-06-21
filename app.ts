@@ -75,8 +75,11 @@ app.get('/change_password', (req, res) => {
 
 // });
 
-app.get('/top/:quizId(\\d+)', (req, res, next) => {
-
+app.get('/top/:quizId(\\d+)', async (req, res, next) => {
+  const id = parseInt(req.params.quizId, 10);
+  const rules : database.QuizRules = await database.getQuizRules(id);
+  console.log(rules.name);
+  res.render('top', {css_file: 'empty', scoreboard_rows: [], quiz_name: rules.name, quiz_id: id})
 });
 
 app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
