@@ -6,8 +6,9 @@ block content
     h2 #{quiz_name}
     h3 Średni czas odpowiedzi to #{quiz_avg}
   main
-    section#start
-      a(href="/q/" + quiz_id) Przejdź do quizu
+    if logged_in
+      section#start
+        a(href="/q/" + quiz_id) Przejdź do quizu
     section#scoreboard
       table
         tr

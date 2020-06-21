@@ -11,6 +11,7 @@ block content
           option(value=quiz.id)= quiz.name
     section#button
       button#start Zobacz
-    section#quiz-custom
-      a(href="/creator") Dodaj własny quiz!
+    if logged_in
+      section#quiz-custom
+        a(href="/creator") Dodaj własny quiz!
   script(src="/script/dashboard.js")
