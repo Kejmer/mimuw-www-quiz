@@ -313,7 +313,6 @@ function prevQuestion() {
 nextBtn.addEventListener("click", () => nextQuestion());
 prevBtn.addEventListener("click", () => prevQuestion());
 cancelBtn.addEventListener("click", () => quizCancel());
-// startBtn.addEventListener("click", () => quizStart());
 stopBtn.addEventListener("click", () => quizStop());
 
 /***************************************************************************/

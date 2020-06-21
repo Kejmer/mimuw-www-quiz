@@ -320,12 +320,12 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   })
 }
 
-export function sendAnswers(scoreboard_id : number, picks : number[]) : Promise<void> {
+export function sendAnswers(scoreboard_id : number, picks : number[], score : number) : Promise<void> {
   let db = openDatabase();
   return new Promise((res, rej) => {
     db.run("BEGIN IMMEDIATE", [], () => {
-      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = 3 WHERE id = ?`,
-        [new Date().toLocaleString(), scoreboard_id], async (err) => {
+      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = ? WHERE id = ?`,
+        [new Date().toLocaleString(), score, scoreboard_id], async (err) => {
         if (err) {
           db.run("ROLLBACK");
           rej();
@@ -357,4 +357,15 @@ function updateHistory(scoreboard_id : number, picks : number[], question_no : n
          res();
       })
   })
+}
+
+export function getStartTime(scoreboard_id : number) : Promise<number> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.get(`SELECT time FROM scoreboard WHERE id = ?`, [scoreboard_id], (err, row) => {
+      if (err || !row) rej();
+      else res(row.time);
+    })
+    db.close();
+  });
 }

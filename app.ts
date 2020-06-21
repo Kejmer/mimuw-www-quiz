@@ -235,6 +235,7 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
     return;
   }
 
+
   for (const i of picks) {
     if (isNaN(i) || i < 0 || 3 < i) {
       next(createError(401));
@@ -242,7 +243,19 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
     }
   }
 
-  await database.sendAnswers(scoreboard_id, picks);
+  const start_time : number = await database.getStartTime(scoreboard_id);
+  let score : number = (Date.now() - start_time) / 1000;
+
+  const questions = await database.quizFromScoreboard(scoreboard_id);
+  for (let i = 0; i < picks.length; i++) {
+    if (questions[i].correct !== questions[i].options[picks[i]])
+      score += rules.penalty;
+  }
+
+  const score_fixed : number = parseFloat(score.toFixed(2));
+  console.log(score_fixed);
+
+  await database.sendAnswers(scoreboard_id, picks, score_fixed);
 
   res.redirect("/top/" + id);
 });
