@@ -94,7 +94,7 @@ export function getQuizRules(id : number) : Promise<QuizRules> {
 export function getBestScores(quiz_id: number) : Promise<Score[]> {
   return new Promise((res, rej) => {
     let db = openDatabase();
-    db.all(`SELECT scoreboard.date, users.username, scoreboard.score, scoreboard.time FROM
+    db.all(`SELECT scoreboard.date as date, users.username as user, scoreboard.score as points, scoreboard.time as time FROM
       scoreboard JOIN users ON scoreboard.user_id = users.id
       WHERE scoreboard.quiz_id = ? AND scoreboard.status = "finished"
       ORDER BY scoreboard.score ASC LIMIT 5
@@ -325,7 +325,7 @@ export function sendAnswers(scoreboard_id : number, picks : number[]) : Promise<
   return new Promise((res, rej) => {
     db.run("BEGIN IMMEDIATE", [], () => {
       db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = 3 WHERE id = ?`,
-        [scoreboard_id, new Date().toLocaleString()], async (err) => {
+        [new Date().toLocaleString(), scoreboard_id], async (err) => {
         if (err) {
           db.run("ROLLBACK");
           rej();

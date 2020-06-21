@@ -2,6 +2,14 @@
   visibility: hidden;
 }
 
+nav#home a {
+  margin: auto;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: inherit;
+  padding: 10px 40px;
+}
+
 
 button::-moz-focus-inner {
   border: 0;
