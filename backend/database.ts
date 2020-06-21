@@ -183,13 +183,13 @@ export function getQuizScoreboard(quiz_id : number, user_id : number) : Promise<
       if (result === 0) {
         result = await getRunningQuiz(quiz_id, user_id, db);
       }
-      if (result !== scoreboard_id && result !== 0) {
+      if (result !== scoreboard_id) {
         db.run("ROLLBACK");
         db.close();
         res(result);
         return;
       }
-
+      console.log(user_id);
       for (let i = 0; i < questions.length; i++) {
         questions[i].setScoreboard(scoreboard_id);
         createQuestion(questions[i], quiz_id, user_id, db);
@@ -230,11 +230,11 @@ export function quizFromScoreboard(scoreboard_id : number) : Promise<QuestionPac
   });
 }
 
-export function deactivate(user_id : number, scoreboard_id : number) : Promise<void> {
+export function deactivate(user_id : number, quiz_id : number) : Promise<void> {
   return new Promise((res, rej) => {
     let db = openDatabase();
-    db.run(`UPDATE scoreboard SET status = "canceled" WHERE scoreboard_id = ? AND user_id = ? AND status = "running"`,
-      [scoreboard_id, user_id], (err) => {
+    db.run(`UPDATE scoreboard SET status = "canceled" WHERE quiz_id = ? AND user_id = ? AND status = "running"`,
+      [quiz_id, user_id], (err) => {
         if (err) rej(err);
         else res();
       })

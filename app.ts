@@ -116,7 +116,7 @@ app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
     return;
   }
   const scoreboard_id = await database.getQuizScoreboard(id, req.session!.user_id);
-  let questions : QuestionPacked[] = await database.quizFromScoreboard(id);
+  let questions : QuestionPacked[] = await database.quizFromScoreboard(scoreboard_id);
 
   if (questions[0].pick === -1) {
     for (let q of questions)
@@ -128,7 +128,16 @@ app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
   });
 });
 
-app.post('/cancel/:quizId(\\d+)')
+app.post('/cancel/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
+  if (!req.session!.user_id) {
+    res.redirect("/login");
+    return;
+  }
+  const quiz_id = parseInt(req.params.quizId, 10);
+  const user_id = req.session!.user_id;
+  await database.deactivate(user_id, quiz_id);
+  res.redirect("/top/" + quiz_id);
+})
 
 app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
   if (!req.session!.user_id) {
