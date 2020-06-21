@@ -24,8 +24,9 @@ app.use(session({secret: "deadBEEF4242424242424242", resave: false, saveUninitia
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-app.get('/', (req, res, next) => {
-  res.render('dashboard', {});
+app.get('/', async (req, res, next) => {
+  const quiz_set = await database.allQuizes();
+  res.render('dashboard', {css_file: 'dashboard'});
 });
 
 app.get('/login', csrfProtection, (req, res) => {
@@ -33,7 +34,7 @@ app.get('/login', csrfProtection, (req, res) => {
     res.redirect("/");
     return;
   }
-  res.render('login', {title: "Logowanie"});
+  res.render('login', {css_file: 'empty'});
 });
 
 app.post('/login', async (req, res, next) => {
@@ -59,13 +60,20 @@ app.get('/logout', (req, res) => {
   res.redirect("/");
 });
 
-app.get('/creator', csrfProtection, (req, res, next) => {
-
+app.get('/change_password', (req, res) => {
+  if (!req.session.user) {
+    res.redirect("/");
+    return;
+  }
 });
 
-app.post('/creator', csrfProtection, (req, res, next) => {
+// app.get('/creator', csrfProtection, (req, res, next) => {
 
-});
+// });
+
+// app.post('/creator', csrfProtection, (req, res, next) => {
+
+// });
 
 app.get('/top/:quizId(\\d+)', (req, res, next) => {
 
@@ -74,38 +82,37 @@ app.get('/top/:quizId(\\d+)', (req, res, next) => {
 app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
   const id = parseInt(req.params.memeId, 10);
 
-  const pickedMeme = await memer.getMeme(db,id);
-  if (pickedMeme === undefined) {
-    next(createError(404));
-    return;
-  }
+  // if (pickedMeme === undefined) {
+  //   next(createError(404));
+  //   return;
+  // }
 
-  const history = await pickedMeme.getHistory(db);
-res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
+  // const history = await pickedMeme.getHistory(db);
+  // res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
 });
 
 app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
-  if (!req.session.user) {
-    next(createError(401));
-    return;
-  }
+  // if (!req.session.user) {
+  //   next(createError(401));
+  //   return;
+  // }
 
-  const id = parseInt(req.params.memeId, 10);
-  if (isNaN(req.body.price)) {
-    next(createError(400));
-    return;
-  }
-  const price = req.body.price;
+  // const id = parseInt(req.params.memeId, 10);
+  // if (isNaN(req.body.price)) {
+  //   next(createError(400));
+  //   return;
+  // }
+  // const price = req.body.price;
 
-  const pickedMeme = await memer.getMeme(db,id);
-  if (pickedMeme === undefined) {
-    next(createError(404));
-    return;
-  }
-  await pickedMeme.setPrice(db, price, req.session.user);
+  // const pickedMeme = await memer.getMeme(db,id);
+  // if (pickedMeme === undefined) {
+  //   next(createError(404));
+  //   return;
+  // }
+  // await pickedMeme.setPrice(db, price, req.session.user);
 
-  const history = await pickedMeme.getHistory(db);
-  res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
+  // const history = await pickedMeme.getHistory(db);
+  // res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
 
 });
 

@@ -1,0 +1,22 @@
+extends layout
+
+block content
+  header
+    h1(href="/") QUIZ IT
+    h2 quiz_name
+  main
+    section#start
+      a(href="/q/" + quiz_id) Przejdź do quizu
+    section#scoreboard
+      table
+        tr
+          th Data
+          th Kto
+          th Punkty
+          th Czas
+        each row in scoreboard_rows
+          tr
+            th= row.date
+            th= row.user
+            th= row.points
+            th= row.time

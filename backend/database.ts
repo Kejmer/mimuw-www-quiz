@@ -46,8 +46,8 @@ export function addQuizSchema(quiz : QuizRules, db : sqlite.Database) {
     min_length,
     max_length,
     min_product,
-    max_product,
-    )`, [
+    max_product
+    ) VALUES (?,?,?,?,?,?,?,?,?,?)`, [
     quiz.name,
     quiz.description,
     quiz.question_count,
@@ -59,6 +59,28 @@ export function addQuizSchema(quiz : QuizRules, db : sqlite.Database) {
     quiz.min_product,
     quiz.max_product,
     ]);
+}
+
+export function allQuizes() : Promise<[number, string][]> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.all('SELECT id, name FROM templates',[],(err, rows) => {
+      if (err) rej(err);
+      else res(rows);
+    })
+    db.close();
+  })
+}
+
+export function getQuizRules(id : number) : Promise<QuizRules> {
+  return new Promise((res, rej) => {
+    let db = openDatabase();
+    db.get('SELECT * FROM templates WHERE id = ?', id, (err, row) => {
+      if (err) rej(err);
+      else res(row)
+    });
+    db.close();
+  });
 }
 
 export function addQuiz(quiz: QuizRules) {
@@ -86,7 +108,7 @@ export function login(username: string, password: string) : Promise<number> {
 
 export function getFinishedQuiz(quiz_id : number, user_id : number, db : sqlite.Database) : Promise<number> {
   return new Promise((res, rej) => {
-    db.get(`SELECT id FROM scoreboard WHERE quiz_id = ? AND user_id = ? AND status = "finished"`
+    db.get(`SELECT id FROM scoreboard WHERE quiz_id = ? AND user_id = ? AND status = "finished"`,
       [quiz_id, user_id],
       (err, row) => {
         if (err) rej(err);
@@ -98,7 +120,7 @@ export function getFinishedQuiz(quiz_id : number, user_id : number, db : sqlite.
 
 export function getRunningQuiz(quiz_id : number, user_id : number, db : sqlite.Database) : Promise<number> {
   return new Promise((res, rej) => {
-    db.get(`SELECT id FROM scoreboard WHERE quiz_id = ? AND user_id = ? AND status = "running"`
+    db.get(`SELECT id FROM scoreboard WHERE quiz_id = ? AND user_id = ? AND status = "running"`,
       [quiz_id, user_id],
       (err, row) => {
         if (err) rej(err);
@@ -109,14 +131,14 @@ export function getRunningQuiz(quiz_id : number, user_id : number, db : sqlite.D
 }
 
 export function prepareNewQuiz(quiz_id : number, user_id : number) : Promise<number> {
-  return new Promise((res, rej) => {
+  return new Promise(async (res, rej) => {
     let questions = generateQuizQuestions(await getQuizRules(quiz_id));
     let db = openDatabase();
     db.run("BEGIN IMMEDIATE", [], async () => {
       const scoreboard_id : number = await newScoreboard(quiz_id, user_id, db);
       for (let i = 0; i < questions.length; i++) {
-        question[i].setScoreboard(scoreboard_id);
-        createQuestion(question[i], quiz_id, user_id, db);
+        questions[i].setScoreboard(scoreboard_id);
+        createQuestion(questions[i], quiz_id, user_id, db);
       }
       db.run("COMMIT");
       db.close();
@@ -141,22 +163,9 @@ function newScoreboard(quiz_id : number, user_id : number, db : sqlite.Database)
     db.run('INSERT INTO scoreboard (quiz_id, user_id, time) VALUES (?, ?, ?)',
       [quiz_id, user_id, Date.now()], function(err) {
         console.log(this);
-        if (err) {
-          if (err)
-        }
-        else res(this.id);
+        if (err) rej(err);
+        else res(this.lastID);
       });
-  })
-}
-
-function getQuizRules(quiz_id : number) : Promise<QuizRules> {
-  return new Promise((res, rej) => {
-    let db = openDatabase();
-    db.run('SELECT * FROM templates WHERE id = ?', quiz_id, () => {
-      if (err) rej(err);
-      else res(row);
-    })
-    db.close();
   })
 }
 
@@ -171,7 +180,7 @@ function generateQuizQuestions(rules : QuizRules) : Question[] {
   }
   let signs = Array.from(temp_set);
 
-  generated_questions = [];
+  let generated_questions : Question[] = [];
   for (let j = 0; j < rules.question_count; j++) {
     let options = [];
     let product_mem = randomRange(rules.min_product, rules.max_product);
@@ -207,83 +216,77 @@ function generateQuizQuestions(rules : QuizRules) : Question[] {
         question += prod.toString();
     }
     let correct_answer : number = eval(question);
-    let options : number[] = [];
     for (let i = 0; i < 4; i++)
-      options[i] = getSimilar(correct, rules.range);
-    options[Math.floor(Math.random() * 4)] = correct;
+      options[i] = getSimilar(correct_answer, rules.range);
+    options[Math.floor(Math.random() * 4)] = correct_answer;
     generated_questions[j] = new Question(j, question, options, -1, correct_answer);
   }
   return generated_questions;
 }
 
-export function clearQuiz(user_id : number, quiz_id : number) {
+// export function clearQuiz(user_id : number, quiz_id : number) {
 
-}
+// }
 
-export class Quiz {
-  private success : boolean;
-  private rules : QuizRules;
-  private signs : string[];
+// export class Quiz {
+//   constructor(rules : string) {
+//     const parsed = JSON.parse(rules);
+//     if (isQuizRules(parsed)) {
+//       if (this.signs.length <= 0 || this.rules.min_prod > this.rules.max_prod ||
+//           this.rules.min_qlen > this.rules.max_qlen || this.rules.min_qlen < 1 ||
+//           this.rules.range < 0 || this.rules.question_count < 1)
+//         this.success = false;
+//     } else {
+//       this.success = false;
+//     }
+//   }
 
-  constructor(rules : string) {
-    const parsed = JSON.parse(rules);
-    if (isQuizRules(parsed)) {
-      if (this.signs.length <= 0 || this.rules.min_prod > this.rules.max_prod ||
-          this.rules.min_qlen > this.rules.max_qlen || this.rules.min_qlen < 1 ||
-          this.rules.range < 0 || this.rules.question_count < 1)
-        this.success = false;
-    } else {
-      this.success = false;
-    }
-  }
+//   private randomRange(min : number, max : number) : number {
+//     return Math.floor(Math.random() * (max - min) + min);
+//   }
 
-  private randomRange(min : number, max : number) : number {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
+//   public getRandomProduct() : number {
+//     return this.randomRange(this.rules.min_prod, this.rules.max_prod);
+//   }
 
-  public getRandomProduct() : number {
-    return this.randomRange(this.rules.min_prod, this.rules.max_prod);
-  }
+//   public getQuestionLength() : number {
+//     return this.randomRange(this.rules.min_qlen, this.rules.max_qlen);
+//   }
 
-  public getQuestionLength() : number {
-    return this.randomRange(this.rules.min_qlen, this.rules.max_qlen);
-  }
+//   public getSign() : string {
+//     return this.signs[Math.floor(Math.random() * this.signs.length)];
+//   }
 
-  public getSign() : string {
-    return this.signs[Math.floor(Math.random() * this.signs.length)];
-  }
+//   public getQuestionCount() : number {
+//     return this.rules.question_count;
+//   }
 
-  public getQuestionCount() : number {
-    return this.rules.question_count;
-  }
+//   public getName() : string {
+//     return this.rules.name;
+//   }
 
-  public getName() : string {
-    return this.rules.name;
-  }
+//   public getDescription() : string {
+//     return this.rules.description;
+//   }
 
-  public getDescription() : string {
-    return this.rules.description;
-  }
-
-  public getPenalty() : number {
-    return this.rules.penalty;
-  }
-}
+//   public getPenalty() : number {
+//     return this.rules.penalty;
+//   }
+// }
 
 
 export class Question {
   private question_no : number;
   private question : string;
   private options : number[];
-  private pick : number[];
+  private pick : number;
   private correct_answer : number;
   private scoreboard_id : number;
 
   private time : number;
   private start_time : Date;
-  private end_time : Date;
 
-  constructor(question_no, question, options, pick, correct_answer) {
+  constructor(question_no : number, question : string, options : number[], pick : number, correct_answer : number) {
     this.question_no = question_no;
     this.question = question;
     this.options = options;
@@ -291,6 +294,7 @@ export class Question {
     this.correct_answer = correct_answer;
     this.time = 0;
     this.scoreboard_id = 0;
+    this.start_time = new Date();
   }
 
   public getQuestion() : string {
@@ -325,26 +329,26 @@ export class Question {
     return this.scoreboard_id;
   }
 
-  public setScoreboard(id) {
+  public setScoreboard(id : number) {
     this.scoreboard_id = id;
   }
 
   public inactive() {
-    this.end_time = new Date();
-    this.time += this.end_time.getTime() - this.start_time.getTime();
+    let end_time = new Date();
+    this.time += end_time.getTime() - this.start_time.getTime();
   }
 
   public getPacked() : any[] {
-    let result = [];
-    result.push_back(this.question_no);
-    result.push_back(this.question);
-    result.push_back(this.options[0]);
-    result.push_back(this.options[1]);
-    result.push_back(this.options[2]);
-    result.push_back(this.options[3]);
-    result.push_back(this.time);
-    result.push_back(this.correct_answer);
-    result.push_back(this.pick);
+    let result : any[] = [];
+    result.push(this.question_no);
+    result.push(this.question);
+    result.push(this.options[0]);
+    result.push(this.options[1]);
+    result.push(this.options[2]);
+    result.push(this.options[3]);
+    result.push(this.time);
+    result.push(this.correct_answer);
+    result.push(this.pick);
     return result;
   }
 }

@@ -2,28 +2,30 @@ import * as sqlite from 'sqlite3';
 import {hashPassword} from './security';
 import {addQuizSchema, openDatabase} from './database';
 
-async function dropAll(db : sqlite.Database) : Promise<void> {
+async function dropAll() : Promise<void> {
   return new Promise((res, rej) => {
-     db.run(`DROP TABLE IF EXISTS users, scoreboard, history, templates`, [],
-       (err: any) => {
-         if (err) throw(err);
-         res();
-       });
+    let db = openDatabase();
+    const tables : string[] = ['users', 'scoreboard', 'history', 'templates'];
+    for (const t_name of tables)
+      db.run('DROP TABLE IF EXISTS ' + t_name); // Drop nie lubi argumentów przekazywanych przez ?
+    db.close(() => {
+      res();
+    })
   });
 }
 
 async function buildTable() {
+  await dropAll();
   const db = openDatabase();
-  await dropAll(db);
   db.run(`
     CREATE TABLE users (
       id INTEGER PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       hashed_pass TEXT NOT NULL
     )`, [], () => {
-    db.run(`INSERT INTO users(username, hashed_pass)
+    db.run(`INSERT INTO users (username, hashed_pass)
       VALUES('user1', ?)`, [hashPassword('user1')]);
-    db.run(`INSERT INTO users(username, hashed_pass)
+    db.run(`INSERT INTO users (username, hashed_pass)
       VALUES('user2', ?)`, [hashPassword('user2')]);
   });
   db.run(`
@@ -67,9 +69,10 @@ async function buildTable() {
     for (const quiz of quizes())
       addQuizSchema(JSON.parse(quiz), db);
     console.log("adding");
-    db.close();
+    db.close(() => {
+      console.log("DONE!")
+    });
   });
-  console.log("DONE!")
 }
 
 function quizes() : string[] {

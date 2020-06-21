@@ -19,21 +19,29 @@
   },
   "homepage": "https://github.com/Kejmer/mimuw-www-quiz#readme",
   "dependencies": {
+    "@types/chai": "^4.2.11",
     "@types/cookie-parser": "^1.4.2",
     "@types/csurf": "^1.9.36",
     "@types/express": "^4.17.6",
     "@types/express-session": "^1.17.0",
     "@types/http-errors": "^1.6.3",
+    "@types/mocha": "^7.0.2",
     "@types/morgan": "^1.9.1",
+    "@types/selenium-webdriver": "^4.0.9",
     "@types/sqlite3": "^3.1.6",
+    "chai": "^4.2.0",
     "cookie-parser": "^1.4.5",
     "crypto": "^1.0.1",
     "csurf": "^1.11.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "http-errors": "^1.7.3",
+    "mocha": "^8.0.1",
+    "mocha-webdriver": "^0.2.8",
     "morgan": "^1.10.0",
-    "sqlite": "^4.0.11",
-    "sqlite3": "^4.2.0"
+    "selenium-webdriver": "^4.0.0-alpha.7",
+    "sqlite3": "^4.2.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.5"
   }
 }
