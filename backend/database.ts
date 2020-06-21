@@ -320,12 +320,12 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   })
 }
 
-export function sendAnswers(scoreboard_id : number, picks : number[], score : number) : Promise<void> {
+export function sendAnswers(scoreboard_id : number, picks : number[], score : number, avg_time : string) : Promise<void> {
   let db = openDatabase();
   return new Promise((res, rej) => {
     db.run("BEGIN IMMEDIATE", [], () => {
-      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = ? WHERE id = ?`,
-        [new Date().toLocaleString(), score, scoreboard_id], async (err) => {
+      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = ?, time = ? WHERE id = ?`,
+        [new Date().toLocaleString(), score, avg_time, scoreboard_id], async (err) => {
         if (err) {
           db.run("ROLLBACK");
           rej();

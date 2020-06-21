@@ -370,50 +370,6 @@ function quizStop() {
 }
 
 /***************************************************************************/
-/***************************** STATISTICS **********************************/
-/***************************************************************************/
-
-function getData(more_data : boolean) {
-  let correct = 0;
-  let penalty = 0;
-  let avg = 0.;
-  let slowest = 0;
-  let fastest = 100000000000000000000;
-
-  for (let i = 0; i < quiz_size; i++) {
-    if (question_status[i] === QuestionStatus.Correct)
-      correct++;
-    // else
-      // penalty += quiz.getPenalty();
-    let time = questions[i].getTime();
-    avg += time;
-    slowest = Math.max(slowest, time);
-    fastest = Math.min(fastest, time);
-  }
-
-  let _fastest : string | undefined = undefined;
-  let _slowest : string | undefined = undefined;
-  let  _avg : string | undefined = undefined;
-  let _penalty : number | undefined = undefined;
-  if (more_data) {
-    _fastest = (fastest / 1000).toFixed(2);
-    _slowest = (slowest / 1000).toFixed(2);
-    _avg = ((avg / quiz_size)/1000).toFixed(2);
-    _penalty = penalty;
-  }
-
-  return {
-    when: new Date().toLocaleString(),
-    // result: correct.toString() + '/' + quiz_size.toString() ,
-    score: score.toFixed(2),
-    penalty: _penalty,
-    avg: _avg,
-    slowest: _slowest,
-    fastest: _fastest
-  }
-}
-
-/***************************************************************************/
 /**************************** TIMER ****************************************/
 /***************************************************************************/
 

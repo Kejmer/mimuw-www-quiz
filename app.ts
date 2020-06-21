@@ -36,7 +36,7 @@ app.use(cors(cors_opt));
 
 app.get('/', async (req, res, next) => {
   const quiz_set = await database.allQuizes();
-  res.render('dashboard', {css_file: 'dashboard', quiz_set: quiz_set});
+  res.render('dashboard', {css_file: 'dashboard', quiz_set: quiz_set, logged_in: req.session!.user});
 });
 
 app.get('/login', csrfProtection, (req, res) => {
@@ -44,7 +44,7 @@ app.get('/login', csrfProtection, (req, res) => {
     res.redirect("/");
     return;
   }
-  res.render('login', {css_file: 'empty', csrfToken: req.csrfToken()});
+  res.render('login', {css_file: 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
 app.post('/login', csrfProtection, async (req, res, next) => {
@@ -61,7 +61,7 @@ app.post('/login', csrfProtection, async (req, res, next) => {
     req.session!.user_id = user_id;
     res.redirect("/");
   } else {
-    res.render('login', {css_file: 'empty', csrfToken: req.csrfToken()});
+    res.render('login', {css_file: 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
   }
 });
 
@@ -76,7 +76,7 @@ app.get('/change_password', csrfProtection, (req, res) => {
     res.redirect("/login");
     return;
   }
-  res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken()});
+  res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
 app.post('/change_password', csrfProtection, async (req, res) => {
@@ -84,7 +84,7 @@ app.post('/change_password', csrfProtection, async (req, res) => {
     const password = req.body.password;
     const repeated = req.body.repeated;
     if (password !== repeated || password === "") {
-      res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken()});
+      res.render('change_password', {css_file : 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
       return;
     }
     await database.changePassword(req.session!.user_id, password);
@@ -98,7 +98,7 @@ app.get('/creator', csrfProtection, (req, res, next) => {
     return;
   }
 
-  res.render('creator', {css_file : 'empty', csrfToken: req.csrfToken()});
+  res.render('creator', {css_file : 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
 app.post('/creator', csrfProtection, (req, res, next) => {
@@ -162,7 +162,7 @@ app.get('/top/:quizId(\\d+)', async (req, res, next) => {
   const id = parseInt(req.params.quizId, 10);
   const rules : QuizRules = await database.getQuizRules(id);
   console.log(rules.name);
-  res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id), quiz_name: rules.name, quiz_id: id})
+  res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id), quiz_name: rules.name, quiz_id: id, logged_in: req.session!.user})
 });
 
 app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
@@ -211,7 +211,7 @@ app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
     return;
   }
 
-  res.render('quiz', {css_file: 'quiz', rules: rules, id: quiz_id, csrfToken: req.csrfToken()});
+  res.render('quiz', {css_file: 'quiz', rules: rules, id: quiz_id, csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
 app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
@@ -245,6 +245,8 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
 
   const start_time : number = await database.getStartTime(scoreboard_id);
   let score : number = (Date.now() - start_time) / 1000;
+  let avg_seconds : number = score / rules.question_count;
+
 
   const questions = await database.quizFromScoreboard(scoreboard_id);
   for (let i = 0; i < picks.length; i++) {
@@ -255,7 +257,7 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
   const score_fixed : number = parseFloat(score.toFixed(2));
   console.log(score_fixed);
 
-  await database.sendAnswers(scoreboard_id, picks, score_fixed);
+  await database.sendAnswers(scoreboard_id, picks, score_fixed, avg_seconds.toFixed(2));
 
   res.redirect("/top/" + id);
 });
@@ -274,7 +276,7 @@ app.use(function(err : any, req : any, res : any, next : any) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('error', {logged_in: req.session!.user});
 });
 
 app.listen(8080, () => {

@@ -8,7 +8,9 @@ html
   body
     nav#home
       a(href="/") główna
-      a(href="/login") zaloguj
-      a(href="/logout") wyloguj
-      a(href="/change_password") zmien hasło
+      if !logged_in
+        a(href="/login") zaloguj
+      else
+        a(href="/logout") wyloguj
+        a(href="/change_password") zmien hasło
     block content
