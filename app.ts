@@ -124,7 +124,8 @@ app.get('/q/json/:quizId(\\d+)', async (req, res, next) => {
   }
 
   res.json({
-    questions : questions
+    questions : questions,
+    scoreboard_id : scoreboard_id
   });
 });
 
@@ -169,25 +170,24 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
     return;
   }
 
+  const scoreboard_id : number = req.body.scoreboard_id;
+  const picks : number[] = req.body.picks;
 
+  if (picks.length !== rules.question_count || isNaN(scoreboard_id)) {
+    next(createError(401));
+    return;
+  }
 
-  // const id = parseInt(req.params.memeId, 10);
-  // if (isNaN(req.body.price)) {
-  //   next(createError(400));
-  //   return;
-  // }
-  // const price = req.body.price;
+  for (const i of picks) {
+    if (isNaN(i) || i < 0 || 3 < i) {
+      next(createError(401));
+      return;
+    }
+  }
 
-  // const pickedMeme = await memer.getMeme(db,id);
-  // if (pickedMeme === undefined) {
-  //   next(createError(404));
-  //   return;
-  // }
-  // await pickedMeme.setPrice(db, price, req.session.user);
+  await database.sendAnswers(scoreboard_id, picks);
 
-  // const history = await pickedMeme.getHistory(db);
-  // res.render('meme', {meme: pickedMeme, history: history, csrfToken: req.csrfToken()});
-
+  res.redirect("/top/" + id);
 });
 
 // catch 404 and forward to error handler

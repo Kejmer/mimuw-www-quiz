@@ -3,15 +3,15 @@ extends layout
 block content
   header
     h1 Quiz it
-    h2#quiz-name= rules.name
+    h2#quiz-name #{rules.name}
   main
     section#timer
       label#minutes 00
       | :
       label#seconds 00
     section#description
-      p#desc= rules.description
-      p#penalty Kara za błędną odpowiedź: =rules.penalty
+      p#desc #{rules.description}
+      p#penalty Kara za błędną odpowiedź: #{rules.penalty}
     section#question
       p#counter
       p#equation
@@ -29,7 +29,7 @@ block content
       button#next Następne
       button#stop(disabled="true") STOP
       form(method='POST' action='/cancel/' + id)
-        input(type="hidden" name="_csrf" value=csrfToken)
+        input#csrf(type="hidden" name="_csrf" value=csrfToken)
         button#cancel(type='submit', style='width:100%;') Anuluj
     nav.hidden#summary
       table#stats

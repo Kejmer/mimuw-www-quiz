@@ -144,18 +144,19 @@ var optionsRange = 4;
 var score = 0;
 var quiz_size;
 var questions = [];
-console.log("WAAA");
 quizStart();
 function isFetchData(obj) {
-    return obj.questions !== undefined;
+    return obj.questions !== undefined && obj.scoreboard_id !== undefined;
 }
 function createQuestions(question_desc) {
     if (isFetchData(question_desc)) {
-        console.log("super");
         return question_desc.questions.map(function (q) {
-            return new Question(q.question_no, q.question, q.options, q.pick, q.correct, q.time);
+            var quest = new Question(q.question_no, q.question, q.options, q.pick, q.correct, q.time);
+            quest.setScoreboard(question_desc.scoreboard_id);
+            return quest;
         });
     }
+    window.location.replace("/");
     return [];
 }
 function getQuizId() {
@@ -169,7 +170,6 @@ function quizStart() {
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    console.log("quizStart start");
                     if (quiz_status !== QuizStatus.Loaded)
                         return [2 /*return*/];
                     _a = createQuestions;
@@ -222,7 +222,6 @@ function quizStart() {
                     setAnswers();
                     questions[current_question].active();
                     showQuiz();
-                    console.log("quizStart end");
                     return [2 /*return*/];
             }
         });
@@ -243,9 +242,6 @@ function setAnswers() {
     noPickDisplay();
     if (picks[current_question] !== -1) {
         var ans = answers[picks[current_question]];
-        console.log(ans);
-        console.log(answers);
-        console.log(picks[current_question]);
         var status_1;
         switch (question_status[current_question]) {
             case QuestionStatus.Incorrect:
@@ -314,18 +310,42 @@ stopBtn.addEventListener("click", function () { return quizStop(); });
 /**************************** QUIZ "BACKEND" *******************************/
 /***************************************************************************/
 function fetchQuestions() {
+    return new Promise(function (res, rej) {
+        fetch("http://localhost:8080/q/json/" + getQuizId(), {
+            method: 'GET',
+            headers: {
+                'Access-Control-Allow-Origin': 'http://localhost:8080'
+            }
+        })
+            .then(function (result) { return result.json(); })
+            .then(function (data) { return res(data); });
+    });
+}
+function postAnswers() {
     return __awaiter(this, void 0, void 0, function () {
+        var csrfInput;
         return __generator(this, function (_a) {
-            return [2 /*return*/, new Promise(function (res, rej) {
-                    fetch("http://localhost:8080/q/json/" + getQuizId(), {
-                        method: 'GET',
-                        headers: {
-                            'Access-Control-Allow-Origin': 'http://localhost:8080'
-                        }
-                    })
-                        .then(function (result) { return result.json(); })
-                        .then(function (data) { return res(data); });
-                })];
+            switch (_a.label) {
+                case 0:
+                    csrfInput = document.getElementById('csrf');
+                    // picks.unshift(questions[0].getScoreboard())
+                    return [4 /*yield*/, fetch("http://localhost:8080/q/" + getQuizId(), {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                picks: picks,
+                                scoreboard_id: questions[0].getScoreboard()
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': csrfInput.value
+                            }
+                        })];
+                case 1:
+                    // picks.unshift(questions[0].getScoreboard())
+                    _a.sent();
+                    window.location.replace('/top/' + getQuizId());
+                    return [2 /*return*/];
+            }
         });
     });
 }
@@ -361,6 +381,7 @@ function quizStop() {
     // document.querySelector('section#summary').classList.remove('hidden');
     // quiz_status = QuizStatus.Finished;
     save();
+    postAnswers();
 }
 /***************************************************************************/
 /***************************** STATISTICS **********************************/

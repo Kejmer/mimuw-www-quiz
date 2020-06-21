@@ -144,16 +144,19 @@ quizStart();
 
 interface fetchData {
   questions : QuestionPacked[];
+  scoreboard_id : number;
 }
 
 function isFetchData(obj : any) : obj is fetchData {
-  return obj.questions !== undefined;
+  return obj.questions !== undefined && obj.scoreboard_id !== undefined;
 }
 
 function createQuestions(question_desc : JSON) : Question[] {
   if (isFetchData(question_desc)) {
     return question_desc.questions.map((q) => {
-      return new Question(q.question_no, q.question, q.options, q.pick, q.correct, q.time);
+      let quest = new Question(q.question_no, q.question, q.options, q.pick, q.correct, q.time);
+      quest.setScoreboard(question_desc.scoreboard_id);
+      return quest;
     })
   }
   window.location.replace("/");
@@ -317,7 +320,7 @@ stopBtn.addEventListener("click", () => quizStop());
 /**************************** QUIZ "BACKEND" *******************************/
 /***************************************************************************/
 
-async function fetchQuestions() : Promise<JSON> {
+function fetchQuestions() : Promise<JSON> {
   return new Promise((res, rej) => {
     fetch("http://localhost:8080/q/json/" + getQuizId(), {
       method: 'GET',
@@ -328,7 +331,23 @@ async function fetchQuestions() : Promise<JSON> {
       .then(result => result.json())
       .then(data => res(data));
   })
+}
 
+async function postAnswers() {
+  const csrfInput = document.getElementById('csrf') as HTMLInputElement;
+  // picks.unshift(questions[0].getScoreboard())
+  await fetch("http://localhost:8080/q/" + getQuizId(), {
+    method: 'POST',
+    body: JSON.stringify({
+      picks: picks,
+      scoreboard_id : questions[0].getScoreboard()
+    }),
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfInput.value
+    }
+  });
+  window.location.replace('/top/' + getQuizId());
 }
 
 
@@ -338,17 +357,6 @@ function quizCancel() {
   window.location.replace('cancel/' + getQuizId());
 }
 
-// function checkAnswers() {
-//   for (let i = 0; i < quiz_size; i++) {
-//     if (questions[i].checkAnswer(picks[i]))
-//       question_status[i] = QuestionStatus.Correct;
-//     else {
-//       question_status[i] = QuestionStatus.Incorrect;
-//       score += quiz.getPenalty();
-//     }
-//     score += questions[i].getTime() / 1000;
-//   }
-// }
 
 function quizStop() {
   if (quiz_status !== QuizStatus.Running)
@@ -360,49 +368,13 @@ function quizStop() {
   questions[current_question].inactive();
   cancelBtn.disabled = true;
   stopBtn.disabled = true;
-  // checkAnswers();
-  // setAnswers();
-  // generateStats();
-  // document.querySelector('section#summary').classList.remove('hidden');
-  // quiz_status = QuizStatus.Finished;
   save();
+  postAnswers();
 }
 
 /***************************************************************************/
 /***************************** STATISTICS **********************************/
 /***************************************************************************/
-
-// function generateStats() {
-//   for (let i = 0; i < quiz_size; i++) {
-//     let row = document.createElement("tr");
-//     if (question_status[i] === QuestionStatus.Correct)
-//       row.classList.add("correct");
-//     else
-//       row.classList.add("incorrect");
-
-//     let cell = document.createElement("td");
-//     cell.innerText = (i+1).toString();
-//     row.appendChild(cell);
-
-//     cell = document.createElement("td");
-//     cell.innerText = questions[i].getOptions()[picks[i]].toString();
-//     row.appendChild(cell);
-
-//     cell = document.createElement("td");
-//     cell.innerText = questions[i].getCorrect().toString();
-//     row.appendChild(cell);
-
-//     cell = document.createElement("td");
-//     cell.innerText = (questions[i].getTime()/1000).toFixed(2).toString();
-//     row.appendChild(cell);
-
-//     cell = document.createElement("td");
-//     cell.innerText = quiz.getPenalty().toString();
-//     row.appendChild(cell);
-
-//     table.appendChild(row);
-//   }
-// }
 
 function getData(more_data : boolean) {
   let correct = 0;

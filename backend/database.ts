@@ -319,13 +319,41 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   })
 }
 
-function updateQuestion(question : Question, db : sqlite.Database) : Promise<void> {
+export function sendAnswers(scoreboard_id : number, picks : number[]) : Promise<void> {
+  let db = openDatabase();
   return new Promise((res, rej) => {
-    db.run(`UPDATE history SET pick = ?, time = ? WHERE scoreboard_id = ? AND question_no = ?`,
-      [question.getPick(), question.getTime(), question.getScoreboard(), question.getQuestionNo()],
-      (err) => {
-        if (err) rej(err);
-        else res();
+    db.run("BEGIN IMMEDIATE", [], () => {
+      db.run(`UPDATE scoreboard SET status = "finished", score = 3 WHERE id = ?`, [scoreboard_id], async (err) => {
+        if (err) {
+          console.log(err);
+          db.run("ROLLBACK");
+          rej();
+          return;
+        }
+        await updateHistory(scoreboard_id, picks, 0, db);
+        db.run("COMMIT");
+        db.close(() =>{
+          res();
+        })
+      });
+    });
+  });
+}
+
+function updateHistory(scoreboard_id : number, picks : number[], question_no : number, db : sqlite.Database) : Promise<void> {
+  return new Promise(async (res, rej) => {
+    if (question_no !== picks.length - 1) {
+      await updateHistory(scoreboard_id, picks, question_no + 1, db);
+    }
+    db.run(`UPDATE history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
+      [picks[question_no], scoreboard_id, question_no], (err) => {
+         if (err) {
+           console.log(err);
+           db.run("ROLLBACK");
+           rej();
+           return;
+         }
+         res();
       })
   })
 }
