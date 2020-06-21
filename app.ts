@@ -5,10 +5,10 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import csurf from 'csurf';
 import sqlite from 'sqlite3';
-import * as database from './backend/database'
-let SQLiteStore = require('connect-sqlite3')(session);
 import session from 'express-session';
+let SQLiteStore = require('connect-sqlite3')(session);
 
+import * as database from './backend/database'
 
 const app = express();
 const csrfProtection = csurf({ cookie: true });
@@ -26,11 +26,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', async (req, res, next) => {
   const quiz_set = await database.allQuizes();
-  res.render('dashboard', {css_file: 'dashboard'});
+  res.render('dashboard', {css_file: 'dashboard', quiz_set: quiz_set});
 });
 
 app.get('/login', csrfProtection, (req, res) => {
-  if (req.session.user) {
+  if (req.session!.user) {
     res.redirect("/");
     return;
   }
@@ -38,7 +38,7 @@ app.get('/login', csrfProtection, (req, res) => {
 });
 
 app.post('/login', async (req, res, next) => {
-  if (req.session.user) {
+  if (req.session!.user) {
     res.redirect("/");
     return;
   }
@@ -47,8 +47,8 @@ app.post('/login', async (req, res, next) => {
   let user_id = await database.login(username, password);
 
   if (user_id !== 0) {
-    req.session.user = username;
-    req.session.user_id = user_id;
+    req.session!.user = username;
+    req.session!.user_id = user_id;
     res.redirect("/");
   } else {
     res.render('login', {});
@@ -56,12 +56,12 @@ app.post('/login', async (req, res, next) => {
 });
 
 app.get('/logout', (req, res) => {
-  req.session.user = 0;
+  req.session!.user = 0;
   res.redirect("/");
 });
 
 app.get('/change_password', (req, res) => {
-  if (!req.session.user) {
+  if (!req.session!.user) {
     res.redirect("/");
     return;
   }
@@ -122,7 +122,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err : any, req : any, res : any, next : any) {
   // set locals, only providing error in development
   console.log("ERROR");
   res.locals.message = err.message;
@@ -133,3 +133,7 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+app.listen(8080, () => {
+    console.log('App is running at http://localhost:8080/');
+    console.log('Press Ctrl+C to stop.');
+});
