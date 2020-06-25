@@ -401,7 +401,7 @@ function updateHistory(scoreboard_id : number, picks : number[], question_no : n
       await updateHistory(scoreboard_id, picks, question_no + 1, db);
     try {
       await dbRun(db,
-        `UPDATE OR ROLLACK history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
+        `UPDATE OR ROLLBACK history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
         [picks[question_no], scoreboard_id, question_no]);
       res()
     } catch (err) {

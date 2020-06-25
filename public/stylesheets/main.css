@@ -37,6 +37,7 @@ header h2 {
   font-size: 20px;
   grid-column-gap: 15px;
   line-height: 100px;
+  margin: auto;
 }
 
 

@@ -104,7 +104,6 @@ let counterField = document.querySelector("section#question p#counter") as HTMLE
 let answerField = document.querySelector("section#answers") as HTMLElement;
 let btnField = document.querySelector("nav#question-btns") as HTMLElement;
 let answers = document.querySelectorAll(".quiz-ans p") as NodeList;
-let table = document.querySelector("table#stats") as HTMLElement;
 
 /***************************************************************************/
 /****************************** BUTTONS ************************************/
