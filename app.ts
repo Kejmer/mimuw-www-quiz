@@ -98,7 +98,7 @@ app.get('/creator', csrfProtection, (req, res, next) => {
     return;
   }
 
-  res.render('creator', {css_file : 'empty', csrfToken: req.csrfToken(), logged_in: req.session!.user});
+  res.render('creator', {css_file : 'quiz_maker', csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
 app.post('/creator', csrfProtection, (req, res, next) => {

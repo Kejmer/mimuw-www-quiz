@@ -90,9 +90,19 @@ th, td {
   font-size: 30px;
 }
 
+nav#home {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+}
+
 @media only screen and (max-width: 500px) {
   table {
     font-size: 10px;
+  }
+
+  nav#home {
+    flex-direction: column;
   }
 }
 
@@ -102,3 +112,10 @@ th, td {
   }
 }
 
+form {
+  text-align: center;
+}
+
+.form-group {
+  margin: 10px;
+}

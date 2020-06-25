@@ -1,0 +1,27 @@
+/*form#quiz-maker {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+
+}*/
+
+#operations {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+#operations > div {
+  margin-left:  2px;
+  margin-right: 2px;
+}
+
+input[type=checkbox]
+{
+  /* Double-sized Checkboxes */
+  -ms-transform: scale(1.4); /* IE */
+  -moz-transform: scale(1.4); /* FF */
+  -webkit-transform: scale(1.4); /* Safari and Chrome */
+  -o-transform: scale(1.4); /* Opera */
+  transform: scale(1.4);
+}
