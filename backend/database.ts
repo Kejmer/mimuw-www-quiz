@@ -32,6 +32,36 @@ function openSessionDatabase() : sqlite.Database {
   return openNamedDatabase('sessions');
 }
 
+function sleep(ms : number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function dbRun(db : sqlite.Database, query: string, params : any[]) : Promise<void> {
+  return new Promise((res, rej) => {
+    db.run(query, params, (err) => {
+      if (err) rej(err);
+      else res();
+    })
+  })
+}
+
+function dbBegin(db : sqlite.Database) : Promise<void> {
+  return dbRun(db, "BEGIN", []);
+}
+
+function dbEnd(db : sqlite.Database) : Promise<void> {
+  return dbRun(db, "END", []);
+}
+
+function dbClose(db : sqlite.Database) : Promise<void> {
+  return new Promise((res, rej) => {
+    db.close((err) => {
+      if (err) rej(err);
+      else res();
+    })
+  })
+}
+
 export function addQuizSchema(quiz : QuizRules, db : sqlite.Database) {
   db.run(`INSERT INTO templates (
     name,
@@ -174,32 +204,50 @@ export function getRunningQuiz(quiz_id : number, user_id : number, db : sqlite.D
   });
 }
 
+async function _getQuizScoreboard(questions : Question[], quiz_id : number, user_id : number,
+  res : any, rej : any, tries : number) {
+  let db = openDatabase();
+  try {
+    await dbBegin(db);
+    const scoreboard_id : number = await newScoreboard(quiz_id, user_id, db);
+    let result = await getFinishedQuiz(quiz_id, user_id, db);
+    if (result === 0) {
+      result = await getRunningQuiz(quiz_id, user_id, db);
+    }
+    if (result !== scoreboard_id) {
+      await dbRun(db, "ROLLBACK", []);
+      await dbClose(db);
+      res(result);
+      return;
+    }
+
+    for (let i = 0; i < questions.length; i++) {
+      questions[i].setScoreboard(scoreboard_id);
+      await createQuestion(questions[i], quiz_id, user_id, db);
+    }
+
+    await dbEnd(db);
+    await dbClose(db);
+
+    res(scoreboard_id);
+
+  } catch (err) {
+    db.close();
+    console.log(err);
+    if (err.errno === 5 && tries > 0) {
+      await sleep(1000);
+      _getQuizScoreboard(questions, quiz_id, user_id, res, rej, tries - 1);
+    }
+    else {
+      rej(err);
+    }
+  }
+}
+
 export function getQuizScoreboard(quiz_id : number, user_id : number) : Promise<number> {
   return new Promise(async (res, rej) => {
     let questions = generateQuizQuestions(await getQuizRules(quiz_id));
-    let db = openDatabase();
-    db.run("BEGIN IMMEDIATE", [], async () => {
-      const scoreboard_id : number = await newScoreboard(quiz_id, user_id, db);
-      let result = await getFinishedQuiz(quiz_id, user_id, db);
-      if (result === 0) {
-        result = await getRunningQuiz(quiz_id, user_id, db);
-      }
-      if (result !== scoreboard_id) {
-        db.run("ROLLBACK");
-        db.close();
-        res(result);
-        return;
-      }
-      console.log(user_id);
-      for (let i = 0; i < questions.length; i++) {
-        questions[i].setScoreboard(scoreboard_id);
-        createQuestion(questions[i], quiz_id, user_id, db);
-      }
-      db.run("COMMIT");
-      db.close(() => {
-        res(scoreboard_id);
-      });
-    })
+    _getQuizScoreboard(questions, quiz_id, user_id, res, rej, 10);
   })
 }
 
@@ -312,50 +360,53 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   let questionPack = question.getPacked();
   questionPack.unshift(user_id);
   questionPack.unshift(quiz_id);
-  return new Promise((res, rej) => {
-    db.run(`INSERT INTO history VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, questionPack, (err) => {
-      if (err) rej(err);
-      else res();
-    });
-  })
+  return dbRun(db, `INSERT OR ROLLBACK INTO history VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, questionPack);
+}
+
+async function _sendAnswers(scoreboard_id : number, picks : number[], score : number,
+  avg_time : string, res : any, rej : any, tries : number) {
+  let db = openDatabase();
+  try {
+    await dbBegin(db);
+    await dbRun(db,
+      `UPDATE OR ROLLBACK scoreboard SET status = "finished", date = ?, score = ?, time = ? WHERE id = ?`,
+      [new Date().toLocaleString(), score, avg_time, scoreboard_id]);
+    await updateHistory(scoreboard_id, picks, 0, db);
+    await dbEnd(db);
+    await dbClose(db);
+    console.log("ANSWERS SAVED TO DB");
+    res();
+  } catch (err) {
+    db.close();
+    console.log(err);
+    if (err.errno === 5 && tries > 0) {
+      await sleep(1000);
+      _sendAnswers(scoreboard_id, picks, score, avg_time, res, rej, tries - 1);
+    }
+    else {
+      rej(err);
+    }
+  }
 }
 
 export function sendAnswers(scoreboard_id : number, picks : number[], score : number, avg_time : string) : Promise<void> {
-  let db = openDatabase();
   return new Promise((res, rej) => {
-    db.run("BEGIN IMMEDIATE", [], () => {
-      db.run(`UPDATE scoreboard SET status = "finished", date = ?, score = ?, time = ? WHERE id = ?`,
-        [new Date().toLocaleString(), score, avg_time, scoreboard_id], async (err) => {
-        if (err) {
-          db.run("ROLLBACK");
-          rej();
-          return;
-        }
-        await updateHistory(scoreboard_id, picks, 0, db);
-        db.run("COMMIT");
-        db.close(() =>{
-          console.log("ANSWERS SAVED TO DB");
-          res();
-        })
-      });
-    });
+    _sendAnswers(scoreboard_id, picks, score, avg_time, res, rej, 10);
   });
 }
 
 function updateHistory(scoreboard_id : number, picks : number[], question_no : number, db : sqlite.Database) : Promise<void> {
   return new Promise(async (res, rej) => {
-    if (question_no !== picks.length - 1) {
+    if (question_no !== picks.length - 1)
       await updateHistory(scoreboard_id, picks, question_no + 1, db);
+    try {
+      await dbRun(db,
+        `UPDATE OR ROLLACK history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
+        [picks[question_no], scoreboard_id, question_no]);
+      res()
+    } catch (err) {
+      rej(err);
     }
-    db.run(`UPDATE history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
-      [picks[question_no], scoreboard_id, question_no], (err) => {
-         if (err) {
-           db.run("ROLLBACK");
-           rej();
-           return;
-         }
-         res();
-      })
   })
 }
 
@@ -373,7 +424,7 @@ export function getStartTime(scoreboard_id : number) : Promise<number> {
 export function getAvgTime(quiz_id : number) : Promise<number> {
   return new Promise((res, rej) => {
     let db = openDatabase();
-    db.get(`SELECT AVG(time) as t_avg FROM scoreboard WHERE quiz_id = ?`, [quiz_id], (err, row) => {
+    db.get(`SELECT AVG(time) as t_avg FROM scoreboard WHERE quiz_id = ? AND status = 'finished'`, [quiz_id], (err, row) => {
       if (err) rej();
       else res(row.t_avg);
     })

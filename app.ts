@@ -7,6 +7,7 @@ import csurf from 'csurf';
 import sqlite from 'sqlite3';
 import session from 'express-session';
 import cors from 'cors';
+
 let SQLiteStore = require('connect-sqlite3')(session);
 
 import * as database from './backend/database'
@@ -33,7 +34,6 @@ const cors_opt = {
 
 app.use(cors(cors_opt));
 
-
 app.get('/', async (req, res, next) => {
   const quiz_set = await database.allQuizes();
   res.render('dashboard', {css_file: 'dashboard', quiz_set: quiz_set, logged_in: req.session!.user});
@@ -52,7 +52,7 @@ app.post('/login', csrfProtection, async (req, res, next) => {
     res.redirect("/");
     return;
   }
-  let username = req.body.username;
+  let username = req.body.username.trim();
   let password = req.body.password;
   let user_id = await database.login(username, password);
 
@@ -166,7 +166,6 @@ app.get('/top/:quizId(\\d+)', async (req, res, next) => {
     return;
   }
   const quiz_avg = await database.getAvgTime(id);
-  console.log(rules.name);
   res.render('top', {css_file: 'dashboard', scoreboard_rows: await database.getBestScores(id),
     quiz_name: rules.name, quiz_id: id, quiz_avg : quiz_avg, logged_in: req.session!.user})
 });

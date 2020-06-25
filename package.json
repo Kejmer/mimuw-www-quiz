@@ -5,7 +5,7 @@
   "main": "./views/dashboard.html",
   "scripts": {
     "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts",
-    "createdb": "npx ts-node backend/schema.ts"
+    "createdb": "npx ts-node backend/schema.ts --trace-warnings"
   },
   "repository": {
     "type": "git",
@@ -38,11 +38,13 @@
     "csurf": "^1.11.0",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "express-validator": "^6.6.0",
     "http-errors": "^1.7.3",
     "mocha": "^8.0.1",
     "mocha-webdriver": "^0.2.8",
     "morgan": "^1.10.0",
     "pug": "^3.0.0",
+    "sanitize": "^2.1.0",
     "selenium-webdriver": "^4.0.0-alpha.7",
     "sqlite3": "^4.2.0",
     "ts-node": "^8.10.2",

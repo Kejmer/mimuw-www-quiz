@@ -36,7 +36,9 @@ header h2 {
   background-color: lime;
   font-size: 20px;
   grid-column-gap: 15px;
+  line-height: 100px;
 }
+
 
 html {
   font-family: Verdana, Roboto, Arial;

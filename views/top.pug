@@ -4,11 +4,14 @@ block content
   header
     h1(href="/") QUIZ IT
     h2 #{quiz_name}
-    h3 Średni czas odpowiedzi to #{quiz_avg}
+    if quiz_avg
+      h3 Średni czas odpowiedzi to #{quiz_avg}
+    else
+      h3 Nikt jeszcze nie rozwiązał quizu
   main
     if logged_in
-      section#start
-        a(href="/q/" + quiz_id) Przejdź do quizu
+      a(href="/q/" + quiz_id)
+        section#start Przejdź do quizu
     section#scoreboard
       table
         tr
