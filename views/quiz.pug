@@ -9,6 +9,9 @@ block content
       label#minutes 00
       | :
       label#seconds 00
+    section#time_percent
+      p Poświęcony czas:
+      p#percent 0%
     section#description
       p#desc #{rules.description}
       p#penalty Kara za błędną odpowiedź: #{rules.penalty}
@@ -30,7 +33,7 @@ block content
       button#stop(disabled="true") STOP
       form(method='POST' action='/cancel/' + id)
         input#csrf(type="hidden" name="_csrf" value=csrfToken)
-        button#cancel(type='submit', style='width:100%;') Anuluj
+        button#cancel(type='submit') Anuluj
     nav.hidden#summary
       table#stats
         tr

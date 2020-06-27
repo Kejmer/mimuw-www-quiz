@@ -363,7 +363,7 @@ function createQuestion(question : Question, quiz_id : number, user_id : number,
   return dbRun(db, `INSERT OR ROLLBACK INTO history VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`, questionPack);
 }
 
-async function _sendAnswers(scoreboard_id : number, picks : number[], score : number,
+async function _sendAnswers(scoreboard_id : number, picks : number[], times : number[], score : number,
   avg_time : string, res : any, rej : any, tries : number) {
   let db = openDatabase();
   try {
@@ -371,7 +371,7 @@ async function _sendAnswers(scoreboard_id : number, picks : number[], score : nu
     await dbRun(db,
       `UPDATE OR ROLLBACK scoreboard SET status = "finished", date = ?, score = ?, time = ? WHERE id = ?`,
       [new Date().toLocaleString(), score, avg_time, scoreboard_id]);
-    await updateHistory(scoreboard_id, picks, 0, db);
+    await updateHistory(scoreboard_id, picks, times, 0, db);
     await dbEnd(db);
     await dbClose(db);
     console.log("ANSWERS SAVED TO DB");
@@ -381,7 +381,7 @@ async function _sendAnswers(scoreboard_id : number, picks : number[], score : nu
     console.log(err);
     if (err.errno === 5 && tries > 0) {
       await sleep(1000);
-      _sendAnswers(scoreboard_id, picks, score, avg_time, res, rej, tries - 1);
+      _sendAnswers(scoreboard_id, picks, times, score, avg_time, res, rej, tries - 1);
     }
     else {
       rej(err);
@@ -389,20 +389,20 @@ async function _sendAnswers(scoreboard_id : number, picks : number[], score : nu
   }
 }
 
-export function sendAnswers(scoreboard_id : number, picks : number[], score : number, avg_time : string) : Promise<void> {
+export function sendAnswers(scoreboard_id : number, picks : number[], times : number[], score : number, avg_time : string) : Promise<void> {
   return new Promise((res, rej) => {
-    _sendAnswers(scoreboard_id, picks, score, avg_time, res, rej, 10);
+    _sendAnswers(scoreboard_id, picks, times, score, avg_time, res, rej, 10);
   });
 }
 
-function updateHistory(scoreboard_id : number, picks : number[], question_no : number, db : sqlite.Database) : Promise<void> {
+function updateHistory(scoreboard_id : number, picks : number[], times : number[], question_no : number, db : sqlite.Database) : Promise<void> {
   return new Promise(async (res, rej) => {
     if (question_no !== picks.length - 1)
-      await updateHistory(scoreboard_id, picks, question_no + 1, db);
+      await updateHistory(scoreboard_id, picks, times, question_no + 1, db);
     try {
       await dbRun(db,
-        `UPDATE OR ROLLBACK history SET picked = ?, time = 0 WHERE scoreboard_id = ? AND question_no = ?`,
-        [picks[question_no], scoreboard_id, question_no]);
+        `UPDATE OR ROLLBACK history SET picked = ?, time = ? WHERE scoreboard_id = ? AND question_no = ?`,
+        [picks[question_no], times[question_no], scoreboard_id, question_no]);
       res()
     } catch (err) {
       rej(err);

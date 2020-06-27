@@ -97,7 +97,6 @@ interface QuestionPacked {
 /***************************************************************************/
 /**************************** QUIZ FIELDS **********************************/
 /***************************************************************************/
-console.log("FIELDS");
 
 let questionField = document.querySelector("section#question p#equation") as HTMLElement;
 let counterField = document.querySelector("section#question p#counter") as HTMLElement;
@@ -192,6 +191,11 @@ async function quizStart() {
     }
   }
 
+  if (quiz_status === QuizStatus.Finished) {
+    document.getElementById("timer").style.display = "none";
+    document.getElementById("time_percent").style.display = "block";
+  }
+
   for (let i = 0; i < optionsRange; i++) {
     const ans = answers[i] as HTMLDivElement;
     ans.parentElement.onclick = () => {
@@ -237,6 +241,8 @@ function noPickDisplay() {
 function setAnswers() {
   noPickDisplay();
   if (quiz_status === QuizStatus.Finished) {
+    updatePercent(questions[current_question].getTime());
+
     for (let i = 0; i < optionsRange; i++) {
       if (questions[current_question].getOptions()[i] === questions[current_question].getCorrect())
         answers[i].parentElement.classList.add("correct");
@@ -257,9 +263,6 @@ function setAnswers() {
         status = "picked";
     }
     ans.parentElement.classList.add(status);
-    if (status === "incorrect") {
-      // zaznacz prawdziwe
-    }
   }
 
   questionField.innerText = questions[current_question].getQuestion();
@@ -278,6 +281,9 @@ function showQuiz() {
   startBtn.style.display = "none";
 }
 
+function updatePercent(value : number) {
+  document.getElementById('percent').textContent = value.toString() + "%";
+}
 
 /***************************************************************************/
 /************************* QUESTION NAVIGATION *****************************/
@@ -337,12 +343,21 @@ function fetchQuestions() : Promise<JSON> {
   })
 }
 
+function getTimes() {
+  let array = [];
+  for (let i = 0; i < questions.length; i++)
+    array.push(questions[i].getTime());
+  return array;
+}
+
 async function postAnswers() {
   const csrfInput = document.getElementById('csrf') as HTMLInputElement;
+  const times = getTimes();
   await fetch("http://localhost:8080/q/" + getQuizId(), {
     method: 'POST',
     body: JSON.stringify({
       picks: picks,
+      times: times,
       scoreboard_id : questions[0].getScoreboard()
     }),
     headers: {

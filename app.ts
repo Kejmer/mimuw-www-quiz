@@ -219,12 +219,19 @@ app.get('/q/:quizId(\\d+)', csrfProtection, async function(req, res, next) {
   res.render('quiz', {css_file: 'quiz', rules: rules, id: quiz_id, csrfToken: req.csrfToken(), logged_in: req.session!.user});
 });
 
+function isArray(obj : any) : obj is any {
+  return typeof(obj) == 'object' && obj instanceof Array;
+}
+
 app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
   if (!req.session!.user_id) {
     res.redirect("/login");
     return;
   }
 
+  const scoreboard_id : number = req.body.scoreboard_id;
+  const picks : number[] = req.body.picks;
+  const times : number[] = req.body.times;
   const id = parseInt(req.params.quizId, 10);
   const rules : QuizRules = await database.getQuizRules(id);
   if (rules === undefined) {
@@ -232,14 +239,22 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
     return;
   }
 
-  const scoreboard_id : number = req.body.scoreboard_id;
-  const picks : number[] = req.body.picks;
-
-  if (picks.length !== rules.question_count || isNaN(scoreboard_id)) {
+  if (isNaN(scoreboard_id) || !isArray(picks) || !isArray(times)) {
     next(createError(401));
     return;
   }
 
+  if (picks.length !== rules.question_count || rules.question_count !== times.length) {
+    next(createError(401));
+    return;
+  }
+
+  for (const i of times) {
+    if (isNaN(i) || i < 0) {
+      next(createError(401));
+      return;
+    }
+  }
 
   for (const i of picks) {
     if (isNaN(i) || i < 0 || 3 < i) {
@@ -249,9 +264,11 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
   }
 
   const start_time : number = await database.getStartTime(scoreboard_id);
-  let score : number = (Date.now() - start_time) / 1000;
-  let avg_seconds : number = score / rules.question_count;
+  const total_time : number = (Date.now() - start_time);
+  let score : number = total_time / 1000;
+  const avg_seconds : number = score / rules.question_count;
 
+  const times_percentage = times.map(x => +(x * 100 / total_time).toFixed(1)); // '+' konwertuje string -> float
 
   const questions = await database.quizFromScoreboard(scoreboard_id);
   for (let i = 0; i < picks.length; i++) {
@@ -262,7 +279,7 @@ app.post('/q/:quizId(\\d+)', csrfProtection, async function (req, res, next) {
   const score_fixed : number = parseFloat(score.toFixed(2));
   console.log(score_fixed);
 
-  await database.sendAnswers(scoreboard_id, picks, score_fixed, avg_seconds.toFixed(2));
+  await database.sendAnswers(scoreboard_id, picks, times_percentage, score_fixed, avg_seconds.toFixed(2));
 
   res.redirect("/top/" + id);
 });

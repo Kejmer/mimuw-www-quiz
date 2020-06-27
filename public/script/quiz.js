@@ -101,13 +101,11 @@ var Question = /** @class */ (function () {
 /***************************************************************************/
 /**************************** QUIZ FIELDS **********************************/
 /***************************************************************************/
-console.log("FIELDS");
 var questionField = document.querySelector("section#question p#equation");
 var counterField = document.querySelector("section#question p#counter");
 var answerField = document.querySelector("section#answers");
 var btnField = document.querySelector("nav#question-btns");
 var answers = document.querySelectorAll(".quiz-ans p");
-var table = document.querySelector("table#stats");
 /***************************************************************************/
 /****************************** BUTTONS ************************************/
 /***************************************************************************/
@@ -195,6 +193,10 @@ function quizStart() {
                             }
                         }
                     }
+                    if (quiz_status === QuizStatus.Finished) {
+                        document.getElementById("timer").style.display = "none";
+                        document.getElementById("time_percent").style.display = "block";
+                    }
                     _loop_1 = function (i) {
                         var ans = answers[i];
                         ans.parentElement.onclick = function () {
@@ -241,6 +243,7 @@ function noPickDisplay() {
 function setAnswers() {
     noPickDisplay();
     if (quiz_status === QuizStatus.Finished) {
+        updatePercent(questions[current_question].getTime());
         for (var i = 0; i < optionsRange; i++) {
             if (questions[current_question].getOptions()[i] === questions[current_question].getCorrect())
                 answers[i].parentElement.classList.add("correct");
@@ -261,9 +264,6 @@ function setAnswers() {
                 status_1 = "picked";
         }
         ans.parentElement.classList.add(status_1);
-        if (status_1 === "incorrect") {
-            // zaznacz prawdziwe
-        }
     }
     questionField.innerText = questions[current_question].getQuestion();
     counterField.innerText = (current_question + 1).toString() + '/' + quiz_size.toString();
@@ -277,6 +277,9 @@ function showQuiz() {
     answerField.classList.remove("hidden");
     btnField.classList.remove("hidden");
     startBtn.style.display = "none";
+}
+function updatePercent(value) {
+    document.getElementById('percent').textContent = value.toString() + "%";
 }
 /***************************************************************************/
 /************************* QUESTION NAVIGATION *****************************/
@@ -326,17 +329,25 @@ function fetchQuestions() {
             .then(function (data) { return res(data); });
     });
 }
+function getTimes() {
+    var array = [];
+    for (var i = 0; i < questions.length; i++)
+        array.push(questions[i].getTime());
+    return array;
+}
 function postAnswers() {
     return __awaiter(this, void 0, void 0, function () {
-        var csrfInput;
+        var csrfInput, times;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     csrfInput = document.getElementById('csrf');
+                    times = getTimes();
                     return [4 /*yield*/, fetch("http://localhost:8080/q/" + getQuizId(), {
                             method: 'POST',
                             body: JSON.stringify({
                                 picks: picks,
+                                times: times,
                                 scoreboard_id: questions[0].getScoreboard()
                             }),
                             headers: {
