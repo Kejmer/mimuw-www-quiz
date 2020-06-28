@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts",
     "createdb": "npx ts-node backend/schema.ts --trace-warnings",
-    "test": "npx mocha -t 200000 -r ts-node/register tests.ts"
+    "test": "mv quiz.db q.db; npm run createdb && npx mocha -t 200000 -r ts-node/register tests.ts; rm quiz.db; mv q.db quiz.db"
   },
   "repository": {
     "type": "git",

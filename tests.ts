@@ -1,7 +1,5 @@
 import { expect } from "chai";
-import {driver} from 'mocha-webdriver';
-// import { Builder, Capabilities, WebDriver, By } from 'selenium-webdriver';
-// import { driver, WebDriver } from 'mocha-webdriver';
+import { driver } from 'mocha-webdriver';
 import { sleep } from './backend/database';
 
 const BASE_PATH  = 'http://localhost:8080/';
