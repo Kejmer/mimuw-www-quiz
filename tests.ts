@@ -4,14 +4,6 @@ import { sleep } from './backend/database';
 
 const BASE_PATH  = 'http://localhost:8080/';
 
-function setup() {
-
-}
-
-function teardown() {
-
-}
-
 async function navigate(path : string) {
   await driver.get(path);
 }
