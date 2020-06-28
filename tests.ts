@@ -47,14 +47,22 @@ async function refresh() {
   await sleep(500);
 }
 
-async function canLogout() {
-  await refresh();
+async function exists(selector : string) {
   try {
-    await driver.find('#logout');
+    await driver.find(selector);
   } catch (err) {
     return false;
   }
   return true;
+}
+
+async function canLogout() {
+  await refresh();
+  return exists('#logout');
+}
+
+async function correctExists() {
+  return exists('.correct');
 }
 
 async function fillQuiz() {
@@ -70,7 +78,6 @@ async function fillQuiz() {
   let seconds = +await driver.find('#seconds').getText();
   await driver.find('#stop').click();
 
-
   return [(minutes * 60 + seconds), question_count]
 }
 
@@ -79,10 +86,6 @@ describe("Testy do quizu", () => {
   before(async () => {
     await driver.manage().setTimeouts({pageLoad: 4000, implicit: 4000});
     await navigate(BASE_PATH);
-  })
-
-  after(async () => {
-    // await driver.quit();
   })
 
 
@@ -118,10 +121,21 @@ describe("Testy do quizu", () => {
     const avg_time = +(await driver.find('#scoreboard > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > th:nth-child(4)').getText());
     const full_time = avg_time * table[1];
     expect(table[0] - 1 <= full_time && full_time <= table[0] + 1).to.be.true;
+    await navigate(BASE_PATH + 'logout');
   });
 
   it("Wejście na quiz po wcześniejszym rozwiązaniu dalej pokazuje poprzednie odpowiedzi, nie da się go rozwiązać", async () => {
-
+    await sleep(1000);
+    await logUser1();
+    await sleep(3000);
+    await navigate(BASE_PATH + 'q/1');
+    await sleep(500);
+    while (!await driver.find('#next').getAttribute("disabled")) {
+      expect(await correctExists()).to.be.true;
+      await driver.find('#first').click();
+      await driver.find('#next').click();
+    }
+    expect(await driver.find('#next').getAttribute("disabled")).to.equal('true');
   })
 
 });
