@@ -7,10 +7,10 @@ html
     link(rel='stylesheet', href='/stylesheets/' + css_file + '.css')
   body
     nav#home
-      a(href="/") główna
+      a#dashboard(href="/") główna
       if !logged_in
-        a(href="/login") zaloguj
+        a#login(href="/login") zaloguj
       else
-        a(href="/logout") wyloguj
-        a(href="/change_password") zmien hasło
+        a#logout(href="/logout") wyloguj
+        a#change_password(href="/change_password") zmien hasło
     block content

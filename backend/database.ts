@@ -32,7 +32,7 @@ function openSessionDatabase() : sqlite.Database {
   return openNamedDatabase('sessions');
 }
 
-function sleep(ms : number) {
+export function sleep(ms : number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -170,7 +170,7 @@ export function changePassword(user_id : number, password: string) : Promise<voi
         return;
       }
       let db2 = openSessionDatabase();
-      db2.run(`DELETE FROM sessions WHERE sess LIKE ?`, ["%\"user_id\":" + user_id + ",%"], (err) => {
+      db2.run(`DELETE FROM sessions WHERE sess LIKE ?`, ['%user_id":' + user_id + "%"], (err) => {
         if (err) rej(err);
         else res();
       })
