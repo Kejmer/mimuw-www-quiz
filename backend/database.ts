@@ -235,7 +235,7 @@ async function _getQuizScoreboard(questions : Question[], quiz_id : number, user
     db.close();
     console.log(err);
     if (err.errno === 5 && tries > 0) {
-      await sleep(1000);
+      await sleep(60);
       _getQuizScoreboard(questions, quiz_id, user_id, res, rej, tries - 1);
     }
     else {
@@ -380,7 +380,7 @@ async function _sendAnswers(scoreboard_id : number, picks : number[], times : nu
     db.close();
     console.log(err);
     if (err.errno === 5 && tries > 0) {
-      await sleep(1000);
+      await sleep(60);
       _sendAnswers(scoreboard_id, picks, times, score, avg_time, res, rej, tries - 1);
     }
     else {

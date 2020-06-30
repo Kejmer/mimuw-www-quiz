@@ -4,7 +4,7 @@
   "description": "",
   "main": "./views/dashboard.html",
   "scripts": {
-    "compile": "tsc script/quiz.ts -t ES2016; tsc script/dashboard.ts",
+    "compile": "tsc public/script/quiz.ts -t ES2016; tsc public/script/dashboard.ts",
     "createdb": "npx ts-node backend/schema.ts --trace-warnings",
     "test": "mv quiz.db q.db; npm run createdb && npx mocha -t 200000 -r ts-node/register tests.ts; rm quiz.db; mv q.db quiz.db"
   },
